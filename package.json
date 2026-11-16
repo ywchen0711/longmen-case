@@ -1,0 +1,6 @@
+{
+  "name": "longmen-case",
+  "private": true,
+  "type": "module",
+  "description": "The Longmen Casebook: an HD-2D animated wuxia detective novel (no build step; tools are node + python)"
+}

@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><body style="background:#5a6a7a;margin:0">
+<div id="o" style="display:flex;flex-wrap:wrap;gap:2px"></div>
+<script type="module">
+import { stillCanvas, ANIMS } from './js/art.js?v=1';
+import { LOOKS, lookOf } from './js/looks.js?v=1';
+const q = new URLSearchParams(location.search), o = document.getElementById('o'), anims = (q.get('a') || 'stand,walk,talk').split(',');
+const names = (q.get('n') || Object.keys(LOOKS).join(',')).split(',');
+for (const n of names) for (const a of anims) { const an = ANIMS[a] ? a : 'stand'; const fr = ANIMS[an].length > 1 ? 1 : 0; const c0 = stillCanvas(LOOKS[n] || lookOf(n, 3), an, fr), sc = +(q.get('s') || 2), c = document.createElement('canvas'); c.width = c0.width * sc; c.height = c0.height * sc; const cx = c.getContext('2d'); cx.imageSmoothingEnabled = false; cx.drawImage(c0, 0, 0, c.width, c.height); c.title = n + ' ' + a; o.appendChild(c); }
+window.SB = 1;
+</script>
