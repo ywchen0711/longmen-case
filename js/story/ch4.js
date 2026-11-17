@@ -1,6 +1,6 @@
 // 第四回 三個嫌疑: the rooftop test with 冷笑天; 柳寒煙's wet sword and the cut bridge; 鐵無私's secret; the storyteller
 // behind the screen; the second deduction.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, CLUE, ASK, MOVE, FX, TRIG, W, MUS, SND, SLOW, FADE } from '../dsl.js?v=1';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, CLUE, ASK, MOVE, FX, TRIG, W, MUS, SND, SLOW, FADE } from '../dsl.js?v=2';
 export default {
   id: 'ch4', zh: '第四回　三個嫌疑', en: 'Chapter Four: Three Suspects',
   beats: [

@@ -1,5 +1,5 @@
 // 第一回 雨夜渡口: the ferry in the rain; everyone arrives at 聽雨樓; the bridge goes down.
-import { S, A, M, P, F, E, LOOK, H, JUGGLE, C, CU, TWO, L, N, TITLE, CARD, POEM, FX, TRIG, W, MUS, SND, RAIN, SLOW, FADE } from '../dsl.js?v=1';
+import { S, A, M, P, F, E, LOOK, H, JUGGLE, C, CU, TWO, L, N, TITLE, CARD, POEM, FX, TRIG, W, MUS, SND, RAIN, SLOW, FADE } from '../dsl.js?v=2';
 export default {
   id: 'ch1', zh: '第一回　雨夜渡口', en: 'Chapter One: The Ferry in the Rain',
   beats: [

@@ -2,9 +2,8 @@
 // move names), the clue pop-up and the casebook, the deduction choices, the backlog, chapter select, the menu and
 // the title screen. Every list can be worked with a mouse, a finger, the keyboard or a gamepad (sel = the
 // highlighted item).
-import { NAMES, HUE, POEMS, CLUES, CLUE_ORDER, ASKS } from './data.js?v=1';
-import { cluePic } from './clues.js?v=1';
-import { CHAPTERS } from './story/index.js?v=1';
+import { NAMES, HUE, POEMS, CLUES, CLUE_ORDER, ASKS } from './data.js?v=2';
+import { cluePic } from './clues.js?v=2';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -38,7 +37,7 @@ export const UI = {
   },
   poemReveal(k) { const L = document.querySelectorAll('#poem .pl'); L.forEach((d, i) => d.classList.toggle('on', i < k)); },
   hidePoem() { $('#poem').classList.add('hidden'); },
-  callout(zh, en) { const c = $('#callout'); c.classList.remove('hidden'); c.querySelector('.cz').textContent = zh; c.querySelector('.ce').textContent = en; const z = c.querySelector('.cz'); z.style.animation = 'none'; void z.offsetWidth; z.style.animation = ''; },
+  callout(zh, en) { const c = $('#callout'); c.classList.remove('hidden'); c.classList.toggle('brush', !!this.watch); c.querySelector('.cz').textContent = zh; c.querySelector('.ce').textContent = en; const z = c.querySelector('.cz'); z.style.animation = 'none'; void z.offsetWidth; z.style.animation = ''; },
   hideCallout() { $('#callout').classList.add('hidden'); },
   pic(kind) { const c = cluePic(kind, 4); return c; },
   cluePop(id) {
@@ -79,9 +78,9 @@ export const UI = {
     if (!entries.length) L.appendChild(el('div', 'row', esc(this.t('（還沒有對白）', '(Nothing yet)'))));
     P.scrollTop = P.scrollHeight;
   },
-  chapters(reached, current, onPick) {
+  chapters(chapters, reached, current, onPick) {
     this.close(); const P = $('#chapters'); P.classList.remove('hidden'); this.open = 'chapters'; const L = P.querySelector('.list'); L.innerHTML = '';
-    CHAPTERS.forEach((c, k) => { const b = el('button', '', esc(this.t(c.zh, c.en)) + (k > reached ? '　🔒' : '')); b.disabled = k > reached; b.onclick = (e) => { e.stopPropagation(); onPick(k); }; L.appendChild(b); });
+    chapters.forEach((c, k) => { const b = el('button', '', esc(this.t(c.zh, c.en)) + (k > reached ? '　🔒' : '')); b.disabled = k > reached; b.onclick = (e) => { e.stopPropagation(); onPick(k); }; L.appendChild(b); });
     this.sel = Math.min(current, reached); this.hilite();
   },
   menu() { this.close(); $('#menu').classList.remove('hidden'); this.open = 'menu'; },
@@ -90,6 +89,11 @@ export const UI = {
     const T = $('#tags'); if (!list) { T.innerHTML = ''; return; }
     T.innerHTML = ''; for (const t of list) { const n = NAMES[t.id] || [t.id, t.id]; const d = el('div', 'tag', esc(this.t(n[0], n[1]))); d.style.left = t.x + 'px'; d.style.top = t.y + 'px'; d.style.borderColor = HUE[t.id] || ''; T.appendChild(d); }
   },
+  // a watched book: the cinematic subtitle bar and the film's own buttons
+  setWatch(on) { this.watch = !!on; document.body.classList.toggle('watch', !!on); },
+  paused(on) { document.body.classList.toggle('paused', !!on); const b = $('#bPause'); if (b) b.classList.toggle('on', !!on); },
+  // the title: which book is chosen
+  books(books, cur) { document.querySelectorAll('#title .bk').forEach((b) => b.classList.toggle('cur', +b.dataset.book === cur)); const B = books.find((x) => x.id === cur); $('#title .l2').textContent = this.t(B.sub[0], B.sub[1]); $('#title .l3').textContent = B.tag; },
   flashTag(on) { const f = $('#flashtag'); f.textContent = this.t('回　憶', 'MEMORY'); f.classList.toggle('on', !!on); },
   buttons(auto, skip) { $('#bAuto').classList.toggle('on', auto); $('#bSkip').classList.toggle('on', skip); },
 };

@@ -2,23 +2,27 @@
 // clues, waits and deductions hold the story until the reader goes on (or Auto/Skip move on by themselves). It can
 // jump to any beat by rebuilding the last set before it and replaying what came after instantly, which is how
 // chapter select, Continue and the test hooks work.
-import { THREE, prefillLooks } from './render.js?v=1';
-import { Diorama } from './scene.js?v=1';
-import { SETS } from './sets.js?v=1';
-import { Actor } from './actors.js?v=1';
-import { Rain, Effects } from './fx.js?v=1';
-import { CHAPTERS } from './story/index.js?v=1';
-import { POEMS, CLUES, ASKS, callId } from './data.js?v=1';
-import * as AU from './audio.js?v=1';
-import { UI } from './ui.js?v=1';
+import { THREE, prefillLooks } from './render.js?v=2';
+import { Diorama } from './scene.js?v=2';
+import { SETS } from './sets.js?v=2';
+import './sets2.js?v=2';
+import './beasts.js?v=2';
+import { Actor } from './actors.js?v=2';
+import { Rain, Effects } from './fx.js?v=2';
+import { BOOKS } from './books.js?v=2';
+import { Fx2 } from './fx2.js?v=2';
+import { runAct } from './fightrun.js?v=2';
+import { POEMS, CLUES, ASKS, callId } from './data.js?v=2';
+import * as AU from './audio.js?v=2';
+import { UI } from './ui.js?v=2';
 
 const ease = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : 0.5 - Math.cos(t * Math.PI) / 2);
 const CAMKEYS = ['x', 'y', 'z', 'd', 'yaw', 'pitch', 'fov'];
-const SAVE = 'longmenCase.v1';
+const PREFS = 'longmenCase.prefs';
 
 export class Player {
   constructor(V) {
-    this.V = V; this.D = new Diorama(V); this.rain = new Rain(V.scene); this.fx = new Effects(V.scene); this.actors = new Map();
+    this.V = V; this.D = new Diorama(V); this.rain = new Rain(V.scene); this.fx = new Effects(V.scene); this.fx2 = new Fx2(V.scene, V); this.D.fx2 = this.fx2; this.actors = new Map(); this.book = BOOKS[0]; this.hitstop = 0; this.rtimers = []; this.paused = false;
     this.ch = 0; this.i = 0; this.block = null; this.auto = false; this.skip = false; this.forceSkip = false; this.textSpeed = 1; this.speed = 1;
     this.slow = 1; this.slowTo = 1; this.gt = 0; this.freeze = false; this.flashback = 0; this.fadeV = 0; this.fade = null; this.timers = [];
     this.cam = { cur: { x: 0, y: 1.5, z: 0, d: 18, yaw: 0, pitch: 20, fov: 30 }, from: null, to: null, t: 0, dur: 0, shake: 0, ts: [0.5, 0.17, 2.2] };
@@ -28,18 +32,28 @@ export class Player {
   }
   async loadVoices() { try { const r = await fetch('audio/voices.json'); if (r.ok) this.vox = await r.json(); } catch (e) { this.vox = {}; } }
   // ------------------------------------------------------------ saving
-  loadSave() { try { const s = JSON.parse(localStorage.getItem(SAVE) || 'null'); if (s) { this.saved = s; this.read = s.read || {}; this.reached = s.reached || 0; if (s.lang) UI.setLang(s.lang); if (s.vol) for (const k in s.vol) AU.setVolume(k, s.vol[k]); if (s.textSpeed) this.textSpeed = s.textSpeed; } } catch (e) { this.saved = null; } }
-  save() { try { const s = { ch: this.ch, i: Math.max(0, this.i - 1), clues: [...this.clues], read: this.read, reached: this.reached, lang: UI.lang, vol: AU.AU.vol, textSpeed: this.textSpeed }; localStorage.setItem(SAVE, JSON.stringify(s)); this.saved = s; } catch (e) { /* private mode: no saving */ } }
-  get chapter() { return CHAPTERS[this.ch]; }
+  // each book keeps its own progress; the language, volumes and text speed are shared
+  loadSave() {
+    this.saved = null; this.read = {}; this.reached = 0;
+    try { const s = JSON.parse(localStorage.getItem(this.book.save) || 'null'); if (s) { this.saved = s; this.read = s.read || {}; this.reached = s.reached || 0; } } catch (e) { this.saved = null; }
+    try { const q = JSON.parse(localStorage.getItem(PREFS) || 'null') || (this.book.id === 1 ? this.saved : null) || JSON.parse(localStorage.getItem(BOOKS[0].save) || 'null'); if (q) { if (q.lang) UI.setLang(q.lang); if (q.vol) for (const k in q.vol) AU.setVolume(k, q.vol[k]); if (q.textSpeed) this.textSpeed = q.textSpeed; } } catch (e) { /* none */ }
+  }
+  save() { try { const s = { ch: this.ch, i: Math.max(0, this.i - 1), clues: [...this.clues], read: this.read, reached: this.reached, lang: UI.lang, vol: AU.AU.vol, textSpeed: this.textSpeed }; localStorage.setItem(this.book.save, JSON.stringify(s)); localStorage.setItem(PREFS, JSON.stringify({ lang: UI.lang, vol: AU.AU.vol, textSpeed: this.textSpeed })); this.saved = s; } catch (e) { /* private mode: no saving */ } }
+  setBook(k) {
+    const b = BOOKS.find((x) => x.id === k) || BOOKS[0]; this.book = b; this.watch = !!b.watch; this.ch = 0; this.i = 0; this.ended = false; this.loadSave();
+    this.V.tiltScale = this.watch ? 0.3 : 1; this.V.tiltBand = this.watch ? 0.3 : 0; UI.setWatch(this.watch); if (this.watch) this.auto = true;
+  }
+  get chapters() { return this.book.chapters; }
+  get chapter() { return this.chapters[this.ch]; }
   // ------------------------------------------------------------ jumping
   start(ch = 0, i = 0) { this.playing = true; UI.title(false); this.jump(ch, i); }
   jump(ch, idx = 0) {
-    this.clearUI(); this.block = null; this.ch = ch; this.slow = this.slowTo = 1; this.freeze = false; this.flashback = 0; this.setFade(0); this.fade = null; this.timers = [];
-    this.clues = new Set(); for (let c = 0; c < ch; c++) for (const b of CHAPTERS[c].beats) if (b.k === 'clue') this.clues.add(b.id);
-    const beats = CHAPTERS[ch].beats; idx = Math.max(0, Math.min(idx, beats.length - 1));
+    this.clearUI(); this.block = null; this.ch = ch; this.slow = this.slowTo = 1; this.hitstop = 0; this.rtimers = []; this.paused = false; UI.paused(false); this.cam.follow = null; this.V.grade.uniforms.bars.value = 0; this.V.grade.uniforms.speed.value = 0; this.V.grade.uniforms.impact.value = 0; this.freeze = false; this.flashback = 0; this.setFade(0); this.fade = null; this.timers = [];
+    this.clues = new Set(); for (let c = 0; c < ch; c++) for (const b of this.chapters[c].beats) if (b.k === 'clue') this.clues.add(b.id);
+    const beats = this.chapters[ch].beats; idx = Math.max(0, Math.min(idx, beats.length - 1));
     let s = 0; for (let k = idx; k >= 0; k--) if (beats[k].k === 'set') { s = k; break; }
     let mus = this.music;
-    for (let k = 0; k < s; k++) { const b = beats[k]; if (b.k === 'clue') this.clues.add(b.id); if (b.k === 'music') mus = b.track; if (b.k === 'flashback') this.flashback = b.on; }
+    for (let k = 0; k < s; k++) { const b = beats[k]; if (b.k === 'clue') this.clues.add(b.id); if (b.k === 'music') mus = b.track; if (b.k === 'flashback') this.flashback = b.on; if (b.k === 'fight') for (const a of b.acts) if (a && a.k === 'music') mus = a.track; }
     this.fast = true; this.musicPick = mus;
     for (let k = s; k < idx; k++) this.exec(beats[k]);
     this.fast = false; this.i = idx; this.reached = Math.max(this.reached, ch);
@@ -51,7 +65,7 @@ export class Player {
     let guard = 0;
     while (!this.block && this.playing && guard++ < 5000) {
       const beats = this.chapter.beats;
-      if (this.i >= beats.length) { if (this.ch + 1 < CHAPTERS.length) { this.ch++; this.i = 0; this.reached = Math.max(this.reached, this.ch); this.save(); continue; } this.finish(); return; }
+      if (this.i >= beats.length) { if (this.ch + 1 < this.chapters.length) { this.ch++; this.i = 0; this.reached = Math.max(this.reached, this.ch); this.save(); continue; } this.finish(); return; }
       const b = beats[this.i++]; this.exec(b);
     }
   }
@@ -96,23 +110,26 @@ export class Player {
       case 'flashback': this.flashback = b.on; if (!F) this.applyFlashback(); return;
       case 'fade': if (F || !b.t) { this.setFade(b.v); return; } this.fade = { from: this.fadeV, to: b.v, t: 0, dur: b.t }; if (b.v > this.fadeV) this.block = { k: 'fade', dur: b.t }; return;
       case 'end': if (F) return; this.block = { k: 'end' }; this.finish(); return;
+      case 'fight': if (F) { for (const a of b.acts) if (typeof a !== 'number') runAct(this, a, true); return; } this.block = { k: 'fight', acts: b.acts, i: 0, wait: 0 }; return;
+      case 'flakes': this.fx2.setFlakes(b.o); return;
       default: return;
     }
   }
   buildSet(name, b) {
-    for (const a of this.actors.values()) a.dispose(); this.actors.clear(); this.fx.clear(); UI.tags(null); this.tagsOn = false;
-    this.D.build(name, SETS[name], { mood: b.mood, broken: b.broken });
-    this.rain.set(this.D.rain); this.rain.floor = this.D.floorAt; AU.setAmbience(this.D.rain, this.D.water ? 1 : 0);
+    for (const a of this.actors.values()) a.dispose(); this.actors.clear(); this.fx.clear(); this.fx2.clear(); UI.tags(null); this.tagsOn = false; this.cam.follow = null;
+    this.D.build(name, SETS[name], { ...b });
+    this.rain.set(this.D.rain); this.rain.floor = this.D.floorAt; AU.setAmbience(this.D.rain, this.D.river ?? (this.D.water ? 1 : 0));
     this.camTo(this.D.cam0, 0); this.cam.ts = [0.5, 0.17, 2.2]; this.nextBolt = 3 + Math.random() * 6; this.applyFlashback();
+    if (this.D.flakes) this.fx2.setFlakes(this.D.flakes); if (this.D.birds) this.fx2.setBirds(this.D.birds.n, this.D.birds);
   }
   applyFlashback() { const g = this.V.grade.uniforms; g.sepia.value = this.flashback ? 0.85 : 0; g.vig.value = this.flashback ? 1.1 : 0.55; UI.flashTag(this.flashback && this.playing); }
   setFade(v) { this.fadeV = v; this.V.grade.uniforms.fade.value = v; }
   markRead() { const id = this.chapter.id; this.read[id] = Math.max(this.read[id] || 0, this.i); }
   // ------------------------------------------------------------ the camera
   shotFor(b) {
-    if (b.k === 'cu') { const a = this.actor(b.id); if (!a) return { ...this.cam.cur }; const kid = a.L?.kid; return { x: a.x + (b.dx || 0), y: a.y + a.head * 0.8 + (b.dy || 0), z: a.z, d: b.d || (kid ? 7.6 : 8.6), yaw: b.yaw ?? -a.face * 6, pitch: b.pitch ?? 7, fov: 30, ts: [0.5, 0.12, 2.6] }; }
+    if (b.k === 'cu') { const a = this.actor(b.id); if (!a) return { ...this.cam.cur }; const kid = a.L?.kid; return { x: a.x + (b.dx || 0), y: a.y + a.head * 0.8 + (b.dy || 0), z: a.z, d: b.d || (this.watch ? (kid ? 6.6 : 7.4) : kid ? 7.6 : 8.6), yaw: b.yaw ?? -a.face * 6, pitch: b.pitch ?? 7, fov: 30, ts: [0.5, 0.12, 2.6] }; }
     const A = this.actor(b.a), B = this.actor(b.b); if (!A || !B) return { ...this.cam.cur };
-    const dist = Math.hypot(A.x - B.x, A.z - B.z); return { x: (A.x + B.x) / 2, y: (A.y + A.head * 0.72 + B.y + B.head * 0.72) / 2, z: (A.z + B.z) / 2, d: Math.max(10.5, dist * 1.4 + 7.5), yaw: b.yaw ?? 0, pitch: b.pitch ?? 9, fov: 30, ts: [0.5, 0.14, 2.4] };
+    const dist = Math.hypot(A.x - B.x, A.z - B.z), W = this.watch; return { x: (A.x + B.x) / 2, y: (A.y + A.head * (W ? 0.6 : 0.72) + B.y + B.head * (W ? 0.6 : 0.72)) / 2, z: (A.z + B.z) / 2, d: W ? Math.max(8.5, dist * 1.25 + 5.2) : Math.max(10.5, dist * 1.4 + 7.5), yaw: b.yaw ?? 0, pitch: b.pitch ?? 9, fov: 30, ts: [0.5, 0.14, 2.4] };
   }
   camTo(o, t) {
     this.cam.focus = null; const to = {}; for (const k of CAMKEYS) to[k] = o[k] ?? this.cam.cur[k]; if (o.fov == null) to.fov = 30;
@@ -121,7 +138,8 @@ export class Player {
     this.cam.from = { ...this.cam.cur }; this.cam.to = to; this.cam.t = 0; this.cam.dur = t;
   }
   applyCam(dt) {
-    const C = this.cam; if (C.from) { C.t += dt; const k = ease(C.t / C.dur); for (const key of CAMKEYS) C.cur[key] = C.from[key] + (C.to[key] - C.from[key]) * k; if (C.t >= C.dur) C.from = null; }
+    const C = this.cam; if (C.from) { C.t += dt; const u = Math.min(1, C.t / C.dur), k = C.ease === 'lin' ? u : C.ease === 'out' ? 1 - (1 - u) ** 3 : C.ease === 'in' ? u * u * u : ease(u); for (const key of CAMKEYS) C.cur[key] = C.from[key] + (C.to[key] - C.from[key]) * k; if (C.t >= C.dur) C.from = null; }
+    if (C.follow) { const a = this.actor(C.follow.id); if (a) { const kk = Math.min(1, dt * C.follow.k); C.cur.x += (a.x + C.follow.dx - C.cur.x) * kk; C.cur.z += (a.z + C.follow.dz - C.cur.z) * kk; C.cur.y += (a.y + (a.air || 0) * 0.6 + C.follow.dy - C.cur.y) * kk; } }
     const c = C.cur, cam = this.V.camera, w = this.V.renderer.domElement.clientWidth || 16, h = this.V.renderer.domElement.clientHeight || 9, asp = w / h;
     // keep what a 16:9 frame shows across: a narrower screen widens the lens (to a point) and steps back
     let fov = c.fov, d = c.d; const ref = asp < 1 ? 1.2 : 16 / 9; if (asp < ref) { const hf = Math.atan(Math.tan((fov * Math.PI) / 360) * ref); let vf = Math.atan(Math.tan(hf) / asp); const cap = (54 * Math.PI) / 360; if (vf > cap) { d *= Math.tan(vf) / Math.tan(cap); vf = cap; } fov = (vf * 360) / Math.PI; }
@@ -140,6 +158,7 @@ export class Player {
     const read = (this.read[this.chapter.id] || 0) >= this.i;
     this.block = { k: 'line', b, text, shown: 0, t: 0, read, voice: null, vt: 0 };
     UI.line(b.who === 'voice' ? 'voice' : b.who, '', b.who === 'narr'); this.markRead();
+    if (this.watch) { this.block.shown = text.length; UI.setText(text, true); }
     this.log.push({ who: b.who, zh: b.zh, en: b.en, vid: b.vid }); if (this.log.length > 300) this.log.shift();
     const skipping = this.skip && (read || this.forceSkip) || this.forceSkip;
     if (!skipping) this.playVoice(b.vid + '.mp3', b);
@@ -202,20 +221,32 @@ export class Player {
   }
   // ------------------------------------------------------------ input
   advance() {
-    const B = this.block; if (!B || UI.open && UI.open !== 'ask') return;
+    const B = this.block; if (!B || UI.open && UI.open !== 'ask') return; if (this.paused) return;
+    if (this.watch) { if (B.k === 'line') return this.endLine(); if (B.k === 'card' || B.k === 'poem') return this.endBlock(); return; }
     if (B.k === 'line') { if (!this.lineDone()) { B.shown = B.text.length; UI.setText(B.text, true); return; } return this.endLine(); }
     if (B.k === 'ask' && B.stage === 'reply') { const L = B.line; if (L.shown < L.text.length) { L.shown = L.text.length; UI.setText(L.text, true); return; } AU.stopVoice(); B.stage = 'choose'; UI.hideBox(); UI.ask(B.id, B.tried, (k) => this.pick(k)); return; }
     if ((B.k === 'card' || B.k === 'clue' || B.k === 'poem' || B.k === 'callout') && (B.t || 0) >= (B.min || 0)) return this.endBlock();
   }
+  // the Skip button of a watched book: whatever holds the story now ends (a fight jumps to its end)
+  skipLine() {
+    const B = this.block; if (!B || this.paused) return;
+    if (B.k === 'line') return this.endLine();
+    if (B.k === 'fight') { for (let j = B.i; j < B.acts.length; j++) { const a = B.acts[j]; if (typeof a !== 'number') runAct(this, a, true); } this.slow = this.slowTo = 1; this.hitstop = 0; UI.hideCallout(); this.block = null; return; }
+    if (B.k === 'wait' || B.k === 'fade') { if (this.fade) { this.setFade(this.fade.to); this.fade = null; } this.block = null; return; }
+    return this.endBlock();
+  }
+  setPaused(on) { this.paused = on; UI.paused(on); AU.pauseVoice(on); }
   endLine() { const B = this.block; AU.stopVoice(); const a = this.actor(B.b.who); if (a) a.talking = false; this.block = null; if (!this.peekKeepsBox()) UI.hideBox(); }
   peekKeepsBox() { const n = this.chapter.beats[this.i]; return n && (n.k === 'line'); }
   endBlock() { const B = this.block; if (!B) return; if (B.k === 'card') UI.hideCard(); if (B.k === 'clue') UI.hideClue(); if (B.k === 'poem') this.endPoem(); if (B.k === 'callout') UI.hideCallout(); this.block = null; }
   clearUI() { UI.hideCard(); UI.hideClue(); UI.hidePoem(); UI.hideCallout(); UI.hideAsk(); UI.hideBox(); UI.tags(null); this.freeze = false; this.V.grade.uniforms.gray.value = 0; AU.stopVoice(); }
   // ------------------------------------------------------------ every frame
   update(dtReal) {
+    if (this.paused) { this.applyCam(0); return; }
     const dt = Math.min(0.1, dtReal) * this.speed;
     this.slow += (this.slowTo - this.slow) * Math.min(1, dt * 10);
-    const gdt = this.freeze ? 0 : dt * this.slow; this.gt += gdt; this.D.t = this.gt;
+    let gdt = this.freeze ? 0 : dt * this.slow; if (this.hitstop > 0) { this.hitstop -= dt; gdt = 0; }
+    for (const tm of this.rtimers) tm.t -= dt; { const due = this.rtimers.filter((t) => t.t <= 0); this.rtimers = this.rtimers.filter((t) => t.t > 0); due.forEach((t) => t.f()); } this.gt += gdt; this.D.t = this.gt;
     if (this.playing) this.tickBlock(dt, gdt);
     if (!this.block && this.playing) this.step();
     for (const tm of this.timers) tm.t -= gdt; const due = this.timers.filter((t) => t.t <= 0); this.timers = this.timers.filter((t) => t.t > 0); due.forEach((t) => t.f());
@@ -230,13 +261,15 @@ export class Player {
     const floor = this.D.floorAt;
     for (const a of this.actors.values()) a.update(gdt, camInfo, floor);
     this.hideOccluders();
-    this.fx.update(gdt); this.fx.tickBinds(gdt);
+    this.fx.update(gdt); this.fx.tickBinds(gdt); if (this.fx2.flakes) this.fx2.flakes.target = new THREE.Vector3(this.cam.cur.x, 0, this.cam.cur.z); this.fx2.update(gdt, camInfo.yawR);
     const tgt = this.tmp.set(this.cam.cur.x, this.cam.cur.y, this.cam.cur.z); this.rain.update(gdt, tgt);
     if (this.tagsOn) this.drawTags();
     prefillLooks(2);
   }
   tickBlock(dt, gdt) {
     const B = this.block; if (!B) return; B.t = (B.t || 0) + dt;
+    if (B.k === 'fight') { B.wait -= gdt; let guard = 0; while (B.wait <= 0 && B.i < B.acts.length && guard++ < 400) { const a = B.acts[B.i++]; if (typeof a === 'number') B.wait += a; else runAct(this, a, false); } if (B.i >= B.acts.length && B.wait <= 0) this.block = null; else if (this.forceSkip) this.skipLine(); return; }
+    if (this.watch) this.auto = true;
     const skipping = this.forceSkip || (this.skip && (B.read || B.k !== 'line'));
     if (B.k === 'line') {
       const cps = (UI.lang === 'en' ? 55 : 30) * this.textSpeed * (skipping ? 20 : 1);

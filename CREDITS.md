@@ -5,6 +5,7 @@
 The story, script, characters' looks, sets, effects, clue pictures and code are original to this project. The pixel
 people are drawn in code by our own sprite system from 亂世豪俠傳 (SanguoBrawl), extended with new looks. The
 characters 奕叡, 奕碩, 冷笑天, 白先生, 鐵無私, 柳寒煙, 小蓮, 苦禪大師, 瘦猴 and 刀疤 belong to the 《龍門雙奕》 series.
+Book Two's 厲寒山, the one-armed fisherman, the white ape (drawn by the same code, js/beasts.js) and the Blood Saber Gate are original too.
 The night show in chapter two quotes a few phrases of the classical essay 《口技》 by 林嗣環 (Qing dynasty, public domain).
 
 ## Ninja Adventure Asset Pack — CC0 1.0
@@ -30,7 +31,7 @@ The characters' voices are synthesised with Microsoft Edge neural text-to-speech
 
 ## Sound effects
 
-Rain, river, thunder, the storyteller's clapper, knocks, doors, blades, palm wind, the chain, darts, chimes and the
+Rain, river, thunder, the storyteller's clapper, blade swings, clashes, impacts, skids, sword qi, the ape's roar, the sheathing click, the swell under the finishers, knocks, doors, blades, palm wind, the chain, darts, chimes and the
 gong are synthesised in the browser with the Web Audio API (`js/audio.js`).
 
 ## Fonts

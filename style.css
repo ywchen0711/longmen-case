@@ -149,3 +149,56 @@ body.titleOn #hud, body.titleOn #box { display: none; }
   #ask .ao button { padding: 6px 10px; font-size: 14px; }
   #poem .pl { font-size: 20px; } #poem .pname { font-size: 44px; }
 }
+
+/* ---- the book choice on the title */
+#title .bks { display: flex; gap: 8px; margin-bottom: 4px; }
+#title .bks .bk { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px; letter-spacing: 0.08em; font-size: 15px; }
+#title .bks .bk b { font-family: var(--brush); font-size: 20px; color: var(--gold); letter-spacing: 0.3em; }
+#title .bks .bk small { font-size: 11px; color: var(--dim); letter-spacing: 0.05em; }
+#title .bks .bk.cur { border-color: var(--gold); background: rgba(138, 106, 52, 0.55); box-shadow: inset 0 0 0 1px rgba(255, 220, 150, 0.4); }
+#title .tb { width: min(360px, 86vw); }
+
+/* ---- a watched book: the film's buttons, a cinematic subtitle instead of the text box */
+.w2 { display: none !important; }
+body.watch .w2 { display: initial !important; }
+body.watch .w1 { display: none !important; }
+body.watch p.w2 { display: block !important; }
+body.watch #hud { opacity: 0.55; transition: opacity 0.3s; }
+body.watch #hud:hover, body.watch.paused #hud { opacity: 1; }
+body.watch #hud button { background: rgba(8, 8, 12, 0.5); border-color: rgba(216, 176, 98, 0.35); }
+body.watch #hud button.on { background: var(--gold2); }
+.pp { font-style: normal; font-size: 10px; letter-spacing: -2px; margin-right: 3px; }
+body.watch #box { background: none; border: 0; box-shadow: none; min-height: 0; bottom: 3.2%; padding: 0 12px; width: min(1100px, calc(100% - 24px)); text-align: center; pointer-events: none; }
+body.watch #box::before, body.watch #box::after, body.watch #next { display: none; }
+body.watch #name { position: static; display: inline; background: none; border: 0; padding: 0 0.5em 0 0; font-size: 0.82em; letter-spacing: 0.06em; text-shadow: 0 0 6px #000, 0 0 2px #000, 1px 1px 0 #000; }
+body.watch #name:empty { display: none; }
+body.watch #name::after { content: '：'; color: rgba(255, 255, 255, 0.5); }
+body.en.watch #name::after { content: ': '; }
+body.watch #text { display: inline; font-size: clamp(17px, 2.1vw, 24px); line-height: 1.6; min-height: 0; color: #fffaf0; text-shadow: 0 0 6px #000, 0 0 3px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
+body.watch.en #text { font-size: clamp(16px, 1.8vw, 21px); }
+body.watch #box.narr #text { color: #f4e6c4; font-family: var(--brush); }
+body.watch #callout.brush { justify-content: flex-start; align-items: flex-end; padding: 0 7vw 0 0; }
+body.watch #callout.brush .cz { writing-mode: vertical-rl; font-size: clamp(54px, 9vh, 110px); letter-spacing: 0.06em; transform: none; color: #fff8ea; text-shadow: 0 0 18px rgba(0, 0, 0, 0.9), 3px 3px 0 #6a1010, -1px -1px 0 #000; animation: brushIn 0.45s cubic-bezier(.2, 1.4, .4, 1); padding: 18px 10px; background: linear-gradient(90deg, rgba(120, 10, 14, 0) 0%, rgba(120, 10, 14, 0.75) 30%, rgba(60, 4, 8, 0.85) 60%, rgba(120, 10, 14, 0) 100%); }
+body.watch #callout.brush .ce { position: absolute; right: 7vw; bottom: 8vh; writing-mode: horizontal-tb; }
+body.en.watch #callout.brush .cz { writing-mode: horizontal-tb; font-size: clamp(40px, 7vw, 86px); }
+body.en.watch #callout.brush { align-items: center; justify-content: flex-end; padding: 0 0 14vh 0; }
+@keyframes brushIn { from { clip-path: inset(0 0 100% 0); opacity: 0.4; } to { clip-path: inset(0 0 0 0); opacity: 1; } }
+#pausedTag { display: none; position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); z-index: 6; font-family: var(--brush); font-size: 34px; letter-spacing: 0.4em; color: #fff4dc; text-shadow: 0 0 12px #000; pointer-events: none; }
+body.paused #pausedTag { display: block; }
+@media (max-aspect-ratio: 1/1) {
+  body.watch:not(.titleOn) #view { height: 66%; }
+  body.watch #box { top: calc(66% + 14px); bottom: auto; left: 0; right: 0; width: auto; transform: none; padding: 0 16px; }
+  body.watch #text { font-size: 19px; }
+  body.watch #hud { bottom: 8px; top: auto; opacity: 0.8; }
+  body.watch #card, body.watch #poem, body.watch #callout { height: 66%; }
+  body.watch #callout.brush { padding-right: 4vw; }
+  body.watch #callout.brush .cz { font-size: 48px; }
+}
+@media (max-height: 500px) and (min-aspect-ratio: 1/1) {
+  body.watch #box { bottom: 4px; }
+  body.watch #text { font-size: 15px; }
+  body.watch #callout.brush .cz { font-size: 46px; padding: 8px 6px; }
+  #title { gap: 10px; }
+  #title .l1 { font-size: 40px; } #title .l2 { font-size: 18px; } #title .l3 { display: none; }
+  #title .tb { gap: 5px; } #title .tb button { padding: 6px; font-size: 14px; } #title .bks .bk { padding: 5px 4px; font-size: 13px; } #title .bks .bk b { font-size: 16px; }
+}

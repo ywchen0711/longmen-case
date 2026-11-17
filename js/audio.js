@@ -65,6 +65,33 @@ export const SFX = {
   heart: () => { tone(60, 0.18, 'sine', 0.6); tone(55, 0.18, 'sine', 0.5, 0.28); },
   sting: () => { tone(98, 2.6, 'sawtooth', 0.08, 0, 92); tone(147, 2.6, 'sawtooth', 0.05, 0, 139); noise(1.6, 'lowpass', 600, 80, 0.7, 0.3); },
   bird: () => { tone(1800, 0.08, 'square', 0.08, 0, 2400); tone(2200, 0.1, 'square', 0.08, 0.1, 1500); },
+  // ---- book two: the sounds of a fight
+  swing: (k = 1) => { noise(0.22 * k, 'bandpass', 900, 3400, 1.4, 0.55 * k); noise(0.12, 'highpass', 4000, 6000, 1, 0.15); },
+  thrust: () => { noise(0.16, 'bandpass', 2400, 5200, 2, 0.5); },
+  dash: () => { noise(0.3, 'bandpass', 500, 2600, 1.2, 0.45); noise(0.12, 'lowpass', 400, 120, 1, 0.3); },
+  leap: () => { noise(0.25, 'bandpass', 400, 1600, 1.4, 0.35); },
+  land: () => { tone(80, 0.18, 'sine', 0.5, 0, 45); noise(0.25, 'lowpass', 900, 150, 1, 0.45); },
+  thud: () => { tone(70, 0.3, 'sine', 0.75, 0, 38); noise(0.4, 'lowpass', 1200, 90, 0.8, 0.7); },
+  skid: () => { noise(0.6, 'bandpass', 1400, 500, 0.8, 0.45); noise(0.5, 'lowpass', 500, 120, 1, 0.3); },
+  clang: (k = 1) => { for (const [f, g, d] of [[1320, 0.14, 0.9], [2170, 0.1, 0.7], [3410, 0.07, 0.5], [870, 0.12, 0.6], [4700, 0.04, 0.3]]) tone(f * (0.96 + Math.random() * 0.08), d * k, 'triangle', g * k, 0, f * 0.985); noise(0.06, 'highpass', 6000, 3000, 1, 0.7 * k); noise(0.2, 'bandpass', 3000, 1500, 2, 0.25 * k); },
+  impact: (k = 1) => { tone(90 - k * 10, 0.2 + k * 0.12, 'sine', 0.45 + k * 0.15, 0, 34); noise(0.12 + k * 0.1, 'lowpass', 2200, 140, 0.9, 0.5 + k * 0.15); if (k >= 2) noise(0.7, 'lowpass', 500, 50, 0.6, 0.5); },
+  qi: () => { noise(0.6, 'bandpass', 600, 4200, 3, 0.45); tone(220, 0.5, 'sawtooth', 0.06, 0, 880); },
+  callout: () => { noise(0.35, 'bandpass', 300, 2000, 2, 0.4); tone(55, 0.6, 'sine', 0.5, 0, 40); },
+  roar: () => { tone(110, 1.3, 'sawtooth', 0.22, 0, 70); tone(166, 1.2, 'sawtooth', 0.12, 0.05, 98); noise(1.3, 'bandpass', 600, 260, 1.4, 0.6); noise(0.9, 'lowpass', 300, 60, 0.7, 0.4, 0.2); },
+  grunt: () => { tone(140, 0.35, 'sawtooth', 0.14, 0, 90); noise(0.3, 'bandpass', 500, 300, 2, 0.35); },
+  crack: () => { noise(0.08, 'highpass', 3000, 1200, 1, 0.9); noise(0.9, 'lowpass', 1400, 80, 0.7, 0.6, 0.05); for (let i = 0; i < 4; i++) noise(0.05, 'bandpass', 1800, 900, 3, 0.4, 0.08 + i * 0.07); },
+  rumble: () => { noise(2.2, 'lowpass', 220, 40, 0.6, 0.8); },
+  splash2: () => { noise(0.9, 'lowpass', 3000, 300, 0.6, 0.7); noise(0.4, 'highpass', 2500, 1500, 1, 0.35, 0.05); },
+  sheathe: () => { noise(0.35, 'bandpass', 3800, 2600, 4, 0.35); tone(2600, 0.05, 'square', 0.12, 0.33); noise(0.04, 'highpass', 5000, 4000, 1, 0.6, 0.33); },
+  snap: () => { tone(2900, 0.5, 'triangle', 0.2, 0, 2200); tone(1700, 0.6, 'triangle', 0.15, 0, 1400); noise(0.1, 'highpass', 5000, 2000, 1, 0.9); },
+  heaven: () => { for (const [f, g] of [[220, 0.1], [330, 0.08], [440, 0.07], [660, 0.05], [880, 0.04]]) tone(f, 3.6, 'sine', g, 0.02, f * 1.005); noise(2.8, 'bandpass', 800, 5000, 0.7, 0.3); tone(41, 3, 'sine', 0.6, 0, 30); },
+  swell: () => { noise(2.4, 'bandpass', 200, 3000, 0.6, 0.35); for (const [f, g] of [[98, 0.1], [147, 0.08], [196, 0.07], [247, 0.05], [294, 0.05]]) tone(f, 3.2, 'sawtooth', g * 0.5, 0.4, f * 1.01); tone(49, 2.6, 'sine', 0.5, 0.5, 45); },
+  wind: () => { noise(2.2, 'bandpass', 300, 900, 0.8, 0.35); },
+  fire: () => { for (let i = 0; i < 8; i++) noise(0.04, 'bandpass', 2000 + Math.random() * 2000, 1000, 3, 0.2, Math.random() * 1.2); noise(1.4, 'lowpass', 500, 200, 0.6, 0.25); },
+  ember: () => { noise(1.2, 'lowpass', 300, 120, 0.6, 0.5); tone(70, 1.4, 'sine', 0.3, 0, 110); },
+  bell: () => { for (const [f, g] of [[523, 0.16], [1046, 0.06], [1567, 0.03]]) tone(f, 2.4, 'sine', g, 0, f * 0.996); },
+  pebble: () => { tone(900, 0.04, 'square', 0.08); noise(0.05, 'highpass', 3000, 2000, 1, 0.3, 0.02); },
+  lantern: () => { noise(0.3, 'bandpass', 2500, 900, 1.5, 0.5); tone(300, 0.2, 'triangle', 0.12, 0.05, 180); },
 };
 export function sfx(name, arg) { if (!ctx || state.muted) return; try { SFX[name]?.(arg); } catch (e) { /* a sound failing must not stop the story */ } }
 
@@ -90,5 +117,6 @@ export function voice(file, rate = 1) {
   if (ctx) { try { vSrc = ctx.createMediaElementSource(el); vSrc.connect(voiceGain); } catch (e) { /* plays direct */ } }
   el.play().catch(() => {}); vEl = el; duck(true); el.onended = () => duck(false); return el;
 }
+export function pauseVoice(on) { if (!vEl) return; if (on) vEl.pause(); else vEl.play().catch(() => {}); if (state.music) { if (on) state.music.el.pause(); else state.music.el.play().catch(() => {}); } }
 export function stopVoice() { if (vEl) { vEl.pause(); vEl.onended = null; vEl = null; duck(false); } }
 export function voicePlaying() { return !!(vEl && !vEl.paused && !vEl.ended); }

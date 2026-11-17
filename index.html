@@ -3,21 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>龍門懸案錄・聽雨樓密室</title>
-<meta name="description" content="The Longmen Casebook: The Locked Room at Tingyu House. An HD-2D animated wuxia detective novel.">
+<title>龍門懸案錄</title>
+<meta name="description" content="The Longmen Casebook: an HD-2D animated wuxia novel in two books. Book One, The Locked Room at Tingyu House, is a detective story; Book Two, The Blade Heart Beneath the Cliff, is a watch-only martial arts film.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 <div id="app">
   <div id="view"><canvas id="c"></canvas><div id="tags"></div><div id="flashtag"></div></div>
   <div id="hud">
-    <button data-act="auto" id="bAuto"><span class="zh">自動</span><span class="en">Auto</span></button>
-    <button data-act="skip" id="bSkip"><span class="zh">快進</span><span class="en">Skip</span></button>
+    <button data-act="pause" id="bPause" class="w2"><span class="zh"><i class="pp">❚❚</i> 暫停</span><span class="en"><i class="pp">❚❚</i> Pause</span></button>
+    <button data-act="skipline" class="w2"><span class="zh">跳過 ▶▶</span><span class="en">Skip ▶▶</span></button>
+    <button data-act="auto" id="bAuto" class="w1"><span class="zh">自動</span><span class="en">Auto</span></button>
+    <button data-act="skip" id="bSkip" class="w1"><span class="zh">快進</span><span class="en">Skip</span></button>
     <button data-act="log"><span class="zh">回顧</span><span class="en">Log</span></button>
-    <button data-act="book" id="bBook"><span class="zh">線索簿</span><span class="en">Casebook</span></button>
+    <button data-act="book" id="bBook" class="w1"><span class="zh">線索簿</span><span class="en">Casebook</span></button>
     <button data-act="chapters"><span class="zh">章節</span><span class="en">Chapters</span></button>
     <button data-act="lang" id="bLang">中 / EN</button>
     <button data-act="menu">☰</button>
@@ -30,6 +32,7 @@
   <div id="card" class="hidden"><div class="t1"></div><div class="t2"></div><div class="t3"></div></div>
   <div id="poem" class="hidden"><div class="pname"></div><div class="ptitle"></div><div class="plines"></div></div>
   <div id="callout" class="hidden"><div class="cz"></div><div class="ce"></div></div>
+  <div id="pausedTag"><span class="zh">暫停</span><span class="en">Paused</span></div>
   <div id="cluepop" class="hidden panel"><div class="ph"></div><div class="pic"></div><div class="pt"></div><div class="pd"></div><div class="pf"></div></div>
   <div id="ask" class="hidden panel"><div class="aq"></div><div class="ao"></div><div class="ah"></div></div>
   <div id="book" class="hidden panel"><div class="ph"><span class="zh">線索簿</span><span class="en">Casebook</span><button class="x">✕</button></div><div class="grid"></div><div class="detail"></div></div>
@@ -39,22 +42,24 @@
     <label><span class="zh">音樂</span><span class="en">Music</span> <input type="range" min="0" max="1" step="0.05" id="vMusic"></label>
     <label><span class="zh">音效</span><span class="en">Effects</span> <input type="range" min="0" max="1" step="0.05" id="vSfx"></label>
     <label><span class="zh">語音</span><span class="en">Voices</span> <input type="range" min="0" max="1" step="0.05" id="vVoice"></label>
-    <label><span class="zh">文字速度</span><span class="en">Text speed</span> <input type="range" min="0.5" max="3" step="0.25" id="vText"></label>
+    <label class="w1"><span class="zh">文字速度</span><span class="en">Text speed</span> <input type="range" min="0.5" max="3" step="0.25" id="vText"></label>
     <div class="row"><button data-act="title"><span class="zh">回到標題</span><span class="en">Back to title</span></button></div>
-    <p class="keys"><span class="zh">點擊／空白鍵／Enter／手把A：下一句　A：自動　S：快進　L：回顧　C：線索簿　Esc：選單</span><span class="en">Click / Space / Enter / pad A: next · A: auto · S: skip · L: log · C: casebook · Esc: menu</span></p>
+    <p class="keys w1"><span class="zh">點擊／空白鍵／Enter／手把A：下一句　A：自動　S：快進　L：回顧　C：線索簿　Esc：選單</span><span class="en">Click / Space / Enter / pad A: next · A: auto · S: skip · L: log · C: casebook · Esc: menu</span></p>
+    <p class="keys w2"><span class="zh">卷二自動播放。點擊／空白鍵：下一句　P：暫停　S：跳過　L：回顧　Esc：選單</span><span class="en">Book Two plays by itself. Click / Space: next line · P: pause · S: skip · L: log · Esc: menu</span></p>
   </div>
   <div id="title">
-    <div class="logo"><div class="l1">龍門懸案錄</div><div class="l2">聽雨樓密室</div><div class="l3">The Longmen Casebook · The Locked Room at Tingyu House</div></div>
+    <div class="logo"><div class="l1">龍門懸案錄</div><div class="l2">聽雨樓密室</div><div class="l3">The Longmen Casebook</div></div>
     <div class="tb">
+      <div class="bks"><button data-act="book1" class="bk" data-book="1"><b>卷一</b><span class="zh">聽雨樓密室</span><span class="en">The Locked Room</span><small><span class="zh">推理・可互動</span><span class="en">mystery · interactive</span></small></button><button data-act="book2" class="bk" data-book="2"><b>卷二</b><span class="zh">斷崖刀心</span><span class="en">The Blade Heart</span><small><span class="zh">武俠・自動播放</span><span class="en">martial arts · watch</span></small></button></div>
       <button data-act="start"><span class="zh">開始</span><span class="en">Begin</span></button>
       <button data-act="continue" id="bCont"><span class="zh">繼續</span><span class="en">Continue</span></button>
       <button data-act="chapters"><span class="zh">章節</span><span class="en">Chapters</span></button>
       <button data-act="lang">中 / EN</button>
     </div>
-    <div class="tf"><span class="zh">HD-2D 武俠推理動畫小說・建議開啟聲音</span><span class="en">An HD-2D wuxia mystery novel · best with sound on</span></div>
+    <div class="tf"><span class="zh">HD-2D 武俠動畫小說・建議開啟聲音</span><span class="en">An HD-2D wuxia animated novel · best with sound on</span></div>
   </div>
   <div id="loading">龍門懸案錄</div>
 </div>
-<script type="module" src="js/main.js?v=1"></script>
+<script type="module" src="js/main.js?v=2"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@ import { RenderPass } from '../lib/addons/RenderPass.js';
 import { UnrealBloomPass } from '../lib/addons/UnrealBloomPass.js';
 import { OutputPass } from '../lib/addons/OutputPass.js';
 import { ShaderPass } from '../lib/addons/ShaderPass.js';
-import { frameCanvas, ANIMS, ANIM_NAMES, FW, FH, OY, PPU } from './art.js?v=1';
+import { frameCanvas, ANIMS, ANIM_NAMES, FW, FH, OY, PPU } from './art.js?v=2';
 export { THREE };
 export const PX = 1 / 16;
 
@@ -27,9 +27,9 @@ const TiltShift = {
     }`,
 };
 const Grade = {
-  uniforms: { tDiffuse: { value: null }, sat: { value: 1.04 }, contrast: { value: 1.06 }, tint: { value: new THREE.Vector3(1.02, 1.0, 0.96) }, vig: { value: 0.55 }, fade: { value: 0 }, flash: { value: 0 }, flashColor: { value: new THREE.Vector3(1, 1, 1) }, gray: { value: 0 }, sepia: { value: 0 }, lift: { value: new THREE.Vector3(0, 0, 0) } },
+  uniforms: { tDiffuse: { value: null }, sat: { value: 1.04 }, contrast: { value: 1.06 }, tint: { value: new THREE.Vector3(1.02, 1.0, 0.96) }, vig: { value: 0.55 }, fade: { value: 0 }, flash: { value: 0 }, flashColor: { value: new THREE.Vector3(1, 1, 1) }, gray: { value: 0 }, sepia: { value: 0 }, lift: { value: new THREE.Vector3(0, 0, 0) }, speed: { value: 0 }, impact: { value: 0 }, spc: { value: new THREE.Vector2(0.5, 0.5) }, asp: { value: 1.78 }, seed: { value: 0 }, bars: { value: 0 } },
   vertexShader: TiltShift.vertexShader,
-  fragmentShader: `uniform sampler2D tDiffuse; uniform float sat, contrast, vig, fade, flash, gray, sepia; uniform vec3 tint, flashColor, lift; varying vec2 vUv;
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float sat, contrast, vig, fade, flash, gray, sepia, speed, impact, asp, seed, bars; uniform vec2 spc; uniform vec3 tint, flashColor, lift; varying vec2 vUv;
     void main(){
       vec4 c = texture2D(tDiffuse, vUv);
       float l = dot(c.rgb, vec3(0.299, 0.587, 0.114));
@@ -41,7 +41,12 @@ const Grade = {
       vec2 d = vUv - 0.5; c.rgb *= 1.0 - dot(d, d) * vig * 1.8;
       c.rgb += lift * (1.0 - l2);
       float ls = dot(c.rgb, vec3(0.299, 0.587, 0.114)); c.rgb = mix(c.rgb, vec3(ls * 1.08, ls * 0.94, ls * 0.74) + 0.03, sepia);
+      if (speed > 0.0) { vec2 q = (vUv - spc) * vec2(asp, 1.0); float ang = atan(q.y, q.x), rr = length(q);
+        float ln = step(0.9, fract(sin(floor(ang * 64.0) * 12.9898 + seed) * 43758.5453));
+        c.rgb = mix(c.rgb, vec3(1.0, 0.98, 0.94), ln * smoothstep(0.32, 0.8, rr) * speed * 0.6); }
+      if (impact > 0.0) { float li = dot(c.rgb, vec3(0.299, 0.587, 0.114)); vec3 bw = vec3(step(0.38, li)); if (impact > 1.5) bw = 1.0 - bw; c.rgb = mix(c.rgb, bw * vec3(1.0, 0.97, 0.92) + (1.0 - bw) * vec3(0.06, 0.02, 0.04), min(1.0, impact)); }
       c.rgb = mix(c.rgb, flashColor, flash);
+      if (bars > 0.0 && abs(vUv.y - 0.5) > 0.5 - bars) c.rgb *= 0.0;
       c.rgb *= 1.0 - fade;
       gl_FragColor = vec4(clamp(c.rgb, 0.0, 1.0), 1.0);
     }`,
@@ -64,11 +69,12 @@ export function createView(canvas) {
     renderer, scene, camera, composer, bloom, grade, tsH, tsV, shake: 0, shakeT: 0,
     resize() {
       const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-      composer.setSize(w, h); const s = renderer.getDrawingBufferSize(new THREE.Vector2()); tsH.uniforms.res.value.copy(s); tsV.uniforms.res.value.copy(s);
+      composer.setSize(w, h); grade.uniforms.asp.value = w / h; const s = renderer.getDrawingBufferSize(new THREE.Vector2()); tsH.uniforms.res.value.copy(s); tsV.uniforms.res.value.copy(s);
       // a narrow screen sees less of the road: pull the camera back a little
       V.portrait = w / h < 1.2;
     },
-    tilt(focus, band, amount) { for (const p of [tsH, tsV]) { p.uniforms.focus.value = focus; p.uniforms.band.value = band; p.uniforms.amount.value = amount; } },
+    tiltScale: 1, tiltBand: 0,
+    tilt(focus, band, amount) { for (const p of [tsH, tsV]) { p.uniforms.focus.value = focus; p.uniforms.band.value = Math.max(band, V.tiltBand); p.uniforms.amount.value = amount * V.tiltScale; } },
     render() { composer.render(); },
   };
   V.resize(); window.addEventListener('resize', () => V.resize());
@@ -117,7 +123,7 @@ export class Body {
   frame(anim, i, face) {
     const t = frameTex(this.E, anim, i);
     if (t !== this.cur) { this.cur = t; const m = this.mesh.material; m.map = t; m.emissiveMap = t; this.mesh.customDepthMaterial.map = t; }
-    this.mesh.scale.x = face < 0 ? -1 : 1;
+    const k = this.L.beast ? (this.L.size || 1) : 1; this.mesh.scale.set(face < 0 ? -k : k, k, 1);
   }
   place(x, y, z, tiltX = -0.32) { this.mesh.position.set(x, y, z); this.mesh.rotation.x = tiltX; this.blob.position.set(x, 0.02, z + 0.05); const k = Math.max(0.4, 1 - y * 0.12) * (this.L.size || 1); this.blob.scale.set(1.5 * k, 1, 0.6 * k); }
   flash(on, col = '#ffffff') { this.mesh.material.emissive.set(on ? col : '#383838'); }

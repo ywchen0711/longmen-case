@@ -2,7 +2,7 @@
 // flowing pixel river that mirrors the lanterns and rings with raindrops, mist, light shafts, hanging lanterns that
 // sway, candles that flicker (and can be snuffed), emote marks over heads, and the moves (sword qi, palm wind,
 // whirlwind ball, iron chain, ink darts, a dart from the dark).
-import { THREE, PX, cutout, cutoutMesh, pxTex, rng } from './render.js?v=1';
+import { THREE, PX, cutout, cutoutMesh, pxTex, rng } from './render.js?v=2';
 
 const canvasTex = (c, nearest = true) => { const t = new THREE.CanvasTexture(c); if (nearest) { t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; } t.colorSpace = THREE.SRGBColorSpace; return t; };
 const softTex = (() => { let t; return () => t || (t = canvasTex(cutout(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.35, 'rgba(255,255,255,0.45)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); }), false)); })();
@@ -199,7 +199,7 @@ export class Effects {
   ring(p, color = '#ffffff', size = 3) { const s = sprite(whirlTex(), size, size, { add: 1, color }); s.position.copy(p); return this.add(s, (t) => { const k = t / 0.5; s.scale.setScalar(size * (0.5 + k * 2)); s.material.opacity = 1 - k; s.material.rotation = t * 8; return k < 1; }); }
   crescent(a, b, dur = 0.45, end) { const m = sprite(crescentTex(), 1.1, 3, { add: 1 }); return this.travel(m, a, b, dur, { trail: 1, end: (p) => { this.burst(p, '#bfe0ff', 3); end?.(p); } }); }
   palm(a, b, dur = 0.6, end) { const m = sprite(palmTex(), 1.6, 1.6, { add: 1 }); return this.travel(m, a, b, dur, { grow: 1.6, trail: 1, end: (p) => { this.burst(p, '#ff6a5a', 4); end?.(p); } }); }
-  ball(a, b, dur = 0.5, end) { const m = sprite(ballTex(), 0.5, 0.5); const w = sprite(whirlTex(), 1.6, 1.6, { add: 1, color: '#cfe8ff' }); this.travel(w, a, b, dur, { spin: 14 }); return this.travel(m, a, b, dur, { spin: 20, end: (p) => { this.ring(p, '#cfe8ff', 2.6); end?.(p); } }); }
+  ball(a, b, dur = 0.5, end, rs = 2.6) { const m = sprite(ballTex(), 0.5, 0.5); const w = sprite(whirlTex(), 1.6 * rs / 2.6, 1.6 * rs / 2.6, { add: 1, color: '#cfe8ff' }); this.travel(w, a, b, dur, { spin: 14 }); return this.travel(m, a, b, dur, { spin: 20, end: (p) => { this.ring(p, '#cfe8ff', rs); end?.(p); } }); }
   ink(a, b, n = 3, end) { for (let i = 0; i < n; i++) { const m = sprite(inkTex(), 0.7, 0.18); const off = new THREE.Vector3(0, (i - (n - 1) / 2) * 0.35, 0); const bb = b.clone().add(off); m.material.rotation = Math.atan2(bb.y - a.y, bb.x - a.x); setTimeout(() => this.travel(m, a.clone().add(off), bb, 0.32, { end: i === n - 1 ? end : null }), i * 60); } }
   dart(a, b, dur = 0.25, end) { const m = sprite(dartTex(), 0.7, 0.18); m.material.rotation = Math.atan2(b.y - a.y, b.x - a.x); return this.travel(m, a, b, dur, { end }); }
   // a cut of sword qi left glowing on a wall, fading slowly

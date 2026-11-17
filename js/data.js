@@ -21,6 +21,15 @@ export const POEMS = {
   xiaotian: { title: ['暴龍', 'The Tyrant Dragon'], zh: ['冷笑三聲天下寒', '暴龍一怒海波翻', '世人笑我狂且傲', '我笑世人看不穿'], en: ['Three cold laughs and the world goes cold;', 'the Tyrant Dragon rages and the seas turn over.', 'The world laughs at me for my pride —', 'I laugh at a world that cannot see through.'] },
 };
 
+// ---- book two: 斷崖刀心
+Object.assign(NAMES, { lihan: ['厲寒山', 'Li Hanshan'], yuweng: ['獨臂漁翁', 'The One-Armed Fisherman'], yiruiB: ['奕叡', 'Yi Rui'], xuedao: ['血刀門弟子', 'Blood Saber Disciple'], guard: ['血刀門守衛', 'Blood Saber Guard'], heixiong: ['黑熊', 'Black Bear'], bandit: ['山賊', 'Bandit'], ape: ['白猿', 'The White Ape'], villager: ['村民', 'Villager'] });
+Object.assign(HUE, { lihan: '#e84858', yuweng: '#e0d0a8', yiruiB: '#6a9cff', xuedao: '#c86a6a', guard: '#c86a6a', heixiong: '#b89070', bandit: '#a09080', villager: '#c0b8a0' });
+Object.assign(POEMS, {
+  lihan: { title: ['斷魂刀', 'The Soul-Severing Blade'], zh: ['白髮如霜刀似血', '九斬之下不留人', '平生最恨一輸字', '天下無刀可並論'], en: ['Hair white as frost, a blade the colour of blood;', 'beneath nine cuts, no one is left standing.', 'All my life I have hated one word: lose.', 'No blade under heaven stands beside mine.'] },
+  yuweng: { title: ['獨臂漁翁', 'The One-Armed Fisherman'], zh: ['一竿一笠一扁舟', '半生恩怨付江流', '莫問老夫名與姓', '魚不上鉤也自由'], en: ['One rod, one hat, one little boat;', 'half a life of debts and grudges, given to the river.', 'Don\'t ask this old man his name —', 'a fish that won\'t bite is free as well.'] },
+  yiruiB: { title: ['沉江刀客', 'The Saber of the Sunken River'], zh: ['斷刀沉谷水無聲', '瀑下千回聽此心', '刀不在手何須快', '一刀未出已分明'], en: ['The broken blade sank; the valley water made no sound.', 'A thousand times beneath the falls I listened to this heart.', 'The blade is not in the hand — why should it be fast?', 'Before it is drawn, everything is already clear.'] },
+});
+
 // The clues. pic: which little picture (clues.js draws them).
 export const CLUES = {
   candle: { zh: '燭・茶・血', en: 'Candle, tea, blood', pic: 'candle', tz: '錢萬里桌上的蠟燭只燒了一指長，是戌時末點上的，點上不久就熄了。茶壺冰冷；他身下的血，邊緣已經乾了。', te: 'The candle on Qian Wanli\'s table burned down only a finger\'s width. It was lit late in the Hour of the Dog and went out soon after. The teapot is stone cold; the blood under him has dried at the edges.' },

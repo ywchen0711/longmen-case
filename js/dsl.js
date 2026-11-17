@@ -32,3 +32,5 @@ export const TAGS = (on = 1) => ({ k: 'tags', on });
 export const BACK = (on = 1) => ({ k: 'flashback', on });                          // the sepia of memory
 export const FADE = (v, t = 0.8) => ({ k: 'fade', v, t });
 export const END = () => ({ k: 'end' });
+export const FIGHT = (...acts) => ({ k: 'fight', acts: acts.flat() });               // book two: a choreographed fight (fight.js)
+export const FLAKES = (o) => ({ k: 'flakes', o });                                    // change what falls (leaves, snow, fireflies…); null: nothing

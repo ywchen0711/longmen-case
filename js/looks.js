@@ -52,3 +52,30 @@ export function lookOf(type, seed = 1) {
 // the brothers in the Law Hall's chains
 LOOKS.yiruiK = { ...LOOKS.yirui, key: 'yiruiK', cuffs: 1 };
 LOOKS.yishuoK = { ...LOOKS.yishuo, key: 'yishuoK', cuffs: 1 };
+
+// ---- book two
+// 斷魂刀 厲寒山: tall and gaunt, a red-black robe, white hair tied back, the long curved blood-red blade
+LOOKS.lihan = { key: 'lihan', size: 1.12, skin: '#ecd2bc', hair: '#e6e6ea', longHair: 1, hat: 'bun', hatC: '#8a1018', robe: '#2a0c10', robe2: '#a8121c', pants: '#1a0a0c', boots: '#140a0c', belt: '#a8121c', fierce: 1, brow: 1.2, wpn: 'bloodblade', sheath: 1, sheathL: 1.25, sheathC: '#4a0a10', sheathT: '#c8a040', hiltC: '#2a0a0e', cape: '#3a0a10', skirt: 0.86, sleeveLong: 1, outline: '#1a0608' };
+LOOKS.lihanB = { ...LOOKS.lihan, key: 'lihanB', wpn: 'brokensaber' };
+// the one-armed old fisherman: a straw hat, a long white beard, a patched grey-brown robe, bare shins, the rod
+LOOKS.yuweng = { key: 'yuweng', skin: '#d8a478', hair: '#d8d4cc', hat: 'straw', hatC: '#c8a860', robe: '#6a6458', robe2: '#a89a7a', pants: '#4a463c', boots: '#3a3028', belt: '#8a7a5a', beard: 'long', beardC: '#eeeae2', oneArm: 1, bareLeg: 1, skirt: 0.5, wpn: 'rodS', holdIdle: 1, sash: '#8a7a5a' };
+LOOKS.yuwengR = { ...LOOKS.yuweng, key: 'yuwengR', wpn: 'rod' };
+LOOKS.yuwengN = { ...LOOKS.yuweng, key: 'yuwengN', wpn: null, holdIdle: 0 };
+LOOKS.yuwengS = { ...LOOKS.yuweng, key: 'yuwengS', wpn: 'brokensaber' };
+LOOKS.yuwengB = { ...LOOKS.yuweng, key: 'yuwengB', wpn: 'blackblade' };
+// 奕叡 through the book: the ring saber, snapped; a stick; the plain black 沉江 in a black sheath; wounded
+LOOKS.yiruiS = { ...LOOKS.yirui, key: 'yiruiS', wpn: 'brokensaber' };
+LOOKS.yiruiW = { ...LOOKS.yirui, key: 'yiruiW', wpn: 'brokensaber', wound: 1 };
+LOOKS.yiruiN = { ...LOOKS.yirui, key: 'yiruiN', wpn: null, sheath: 0, wound: 1 };
+LOOKS.yiruiT = { ...LOOKS.yirui, key: 'yiruiT', wpn: 'stick', sheath: 0 };
+LOOKS.yiruiH = { ...LOOKS.yirui, key: 'yiruiH', wpn: 'fruit', holdIdle: 1, sheath: 0 };
+LOOKS.yiruiB = { ...LOOKS.yirui, key: 'yiruiB', wpn: 'blackblade', sheath: 1, sheathC: '#18181c', sheathT: '#5a5a64', hiltC: '#1a1a1e' };
+LOOKS.yiruiBW = { ...LOOKS.yiruiB, key: 'yiruiBW', wound: 1 };
+LOOKS.yishuoR = { ...LOOKS.yishuo, key: 'yishuoR', cuffs: 1 };
+// the white ape
+LOOKS.ape = { key: 'ape', beast: 'ape', headH: 3.7, size: 1.4 };
+// 黑風寨's chief 黑熊
+LOOKS.heixiong = { key: 'heixiong', fat: 1, size: 1.14, skin: '#c48a5a', hair: '#141010', hat: 'band', hatC: '#1a1a1a', robe: '#3a3028', robe2: '#8a6a3a', pants: '#2a2420', boots: '#1a1612', belt: '#6a4a2a', beard: 'bushy', fierce: 1, brow: 1.5, wpn: 'club', skirt: 0.45, bare: 0, bareLeg: 1 };
+// 血刀門 disciples (red and black, sabers) and 黑風寨 bandits
+TYPES.xuedao = (r) => ({ skin: pick([SK.fair, SK.warm, SK.tan], r()), hair: '#1a1410', hat: pick(['band', 'bun', 'cloth'], r()), hatC: '#8a1018', robe: pick(['#3a0e12', '#4a1014', '#2e0c10'], r()), robe2: '#b01a22', pants: '#1a0a0c', boots: '#140a0c', belt: '#b01a22', beard: pick(['none', 'none', 'stubble', 'mustache'], r()), fierce: 1, brow: 1.2, wpn: 'saber', skirt: 0.55 });
+TYPES.bandit = (r) => ({ skin: pick([SK.tan, SK.dark, SK.warm], r()), hair: '#1a1410', hat: pick(['band', 'cloth'], r()), hatC: pick(['#2a2a2a', '#5a3a2a', '#3a4a3a'], r()), robe: pick(['#4a4038', '#3a3a3a', '#5a4a32'], r()), robe2: '#8a6a3a', pants: '#2a2622', boots: '#1a1612', belt: '#6a4a2a', beard: pick(['stubble', 'bushy', 'none'], r()), fierce: 1, brow: 1.3, wpn: pick(['club', 'saber', 'axe'], r()), skirt: 0.42, bareLeg: r() < 0.5 ? 1 : 0 });

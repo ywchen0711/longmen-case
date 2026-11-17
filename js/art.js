@@ -11,7 +11,7 @@
 export const FW = 160, FH = 168;          // frame size in pixels; the feet stand at (80, 152)
 export const OX = 80, OY = 152;
 export const PPU = 32;                     // pixels to a unit of the world
-import { HEADS, HATS, BEARDS, ANCHOR } from './heads.js?v=1';
+import { HEADS, HATS, BEARDS, ANCHOR } from './heads.js?v=2';
 const R = Math.PI / 180;
 
 const hexRGB = (c) => { const n = parseInt(c.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -106,7 +106,10 @@ const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 const BASE = { bx: 0, by: 0, lean: 4, hd: [0, 0], fa: [20, 60], ba: [-15, 50], fl: [10, 8], bl: [-10, 6], w: 120, w2: null, eye: 'open', mouth: 0, tilt: 0, fx: 0 };
 export let lastHead = [OX, 60];
 
+// creatures that are not people (the white ape) register a drawer here (beasts.js)
+export const BEAST = {};
 export function drawFrame(L, pose) {
+  if (L.beast && BEAST[L.beast]) return BEAST[L.beast](L, { ...pose });
   const P = { ...BASE, ...pose }, S = L.size || 1, s = S * 0.9 * (L.kid ? 0.8 : 1), B = new Buf();
   const fat = L.fat ? 1 : 0, skin = L.skin || '#f0c49a', robe = L.robe || '#4a6a9a', robe2 = L.robe2 || shade(robe, 0.7);
   const armor = L.bare ? null : L.armor, pants = L.pants || shade(robe, 0.6), boots = L.boots || '#3a2a22', trim = L.trim || robe2;
@@ -160,8 +163,9 @@ export function drawFrame(L, pose) {
   // ---- behind: the back arm (and a second weapon), the back leg, a cape
   const showW = P.w != null && (!P.calm || L.holdIdle), showW2 = P.w2 != null && (!P.calm || L.holdIdle);
   if (showW2 && L.wpn2) drawWeapon(B, L.wpn2, BA.hand, P.w2, s * 2, true, L.wpn2C);
-  if (L.sheath) { B.next('vol'); B.limb(T(-3, 9), T(-15, -6), 2.6 * s, 2.2 * s, '#3a2418'); flat(B); B.limb(T(-4, 8.4), T(-4.6, 7.6), 3.2 * s, 3.2 * s, '#d8b048'); if (!showW) { B.next('vol', 'grain'); B.limb(T(-2, 10.4), T(3.5, 16), 1.8 * s, 1.8 * s, '#2a1a12'); B.next('metal'); B.disc(...T(4.6, 17.2), 2 * s, '#d8b048'); } }
-  drawArm(BA, true);
+  if (L.sheath) { const sl = L.sheathL || 1, sc = L.sheathC || '#3a2418', st = L.sheathT || '#d8b048'; B.next('vol'); B.limb(T(-3, 9), T(-3 - 12 * sl, 9 - 15 * sl), 2.6 * s, 2.2 * s, sc); flat(B); B.limb(T(-4, 8.4), T(-4.6, 7.6), 3.2 * s, 3.2 * s, st); if (!showW) { B.next('vol', 'grain'); B.limb(T(-2, 10.4), T(3.5, 16), 1.8 * s, 1.8 * s, L.hiltC || '#2a1a12'); B.next('metal'); B.disc(...T(4.6, 17.2), 2 * s, st); } }
+  if (L.oneArm) { B.next('vol', 'fold'); const sb = shB, e = [sb[0] - 1.5 * s, sb[1] + 9 * s], lo = [sb[0] + 1 * s, sb[1] + 17 * s]; B.limb(sb, e, 8 * s, 6 * s, shade(robe, 0.72)); B.limb(e, lo, 6 * s, 4.4 * s, shade(robe, 0.66)); }
+  else drawArm(BA, true);
   drawLeg(BL, true);
   if (L.cape) {
     const sway = P.cape ?? 0, c0 = T(-2, 25.5), c1 = T(-6.5, 23), lo = [pel[0] - (17 + sway) * s, pel[1] + 20 * s], lo2 = [pel[0] - (4 + sway * 0.5) * s, pel[1] + 23 * s];
@@ -209,6 +213,7 @@ export function drawFrame(L, pose) {
   drawHeadT(B, L, headC, P, ha, false);
   if (Math.min(FA.elb[1], FA.wr[1]) < shF[1] - 2 * s) frontArm();
   if (L.beard === 'long') drawHeadT(B, L, headC, P, ha, true);
+  if (L.wound) { flat(B); const a = lerp(shF, FA.elb, 0.05), b = lerp(shF, FA.elb, 0.55); B.seg(a[0] - 2 * s, a[1] - 1, b[0] + 1 * s, b[1], 2.6 * s, '#8a1414'); B.seg(a[0] - 1 * s, a[1], b[0], b[1] - 1, 1.2 * s, '#c82828'); }
   if (P.bound || L.cuffs) { B.next('metal'); B.seg(FA.hand[0], FA.hand[1], BA.hand[0], BA.hand[1], 1.6 * s, '#8a8a94'); B.next('metal'); B.disc(FA.hand[0], FA.hand[1], 2.4 * s, '#6a6a74'); }
   if (L.shield) { const c = FA.wr; B.next(); B.disc(c[0] + 2, c[1], 8.6 * s, L.shield); flat(B); B.disc(c[0] + 2, c[1], 2.6 * s, '#d8c070'); }
   return B.finish(L.outline);
@@ -408,6 +413,13 @@ function drawWeapon(B, kind, h, a, s, back, colour) {
     case 'bow': { B.next(); let q = at(-9, 3); for (let i = 1; i <= 10; i++) { const t = -9 + i * 1.8, n = at(t, 3 + Math.sin(i / 10 * Math.PI) * -6); B.seg(q[0], q[1], n[0], n[1], 1.6 * s, '#6a3a1a'); q = n; } flat(B); B.seg(...at(-9, 3), ...at(9, 3), 1, '#e8e0d0'); break; }
     // ---- Longmen: things people hold
     case 'ringsaber': line(-3.4, 0, 1.4, '#2a1a3a'); B.next('metal'); B.disc(...at(-5.2), 2 * s, gold); flat(B); B.disc(...at(-5.2), 0.9 * s, '#000000'); B.c.forEach((v, i) => { if (B.p[i] === B.part) B.c[i] = -1; }); line(0.8, 1.2, 3.8, gold, 'metal'); poly([at(1.5, -0.9), at(12.5, -0.9), at(16, 0.2), at(17.4, 1.8), at(10, 1.6), at(1.5, 1.2)], steel); edge(2.5, 15.5, -0.5, 0.4); break;
+    // ---- book two: a saber snapped short, a training stick, the plain black 沉江, the long blood-red blade, a straight rod
+    case 'brokensaber': line(-3.4, 0, 1.4, '#2a1a3a'); B.next('metal'); B.disc(...at(-5.2), 2 * s, gold); flat(B); B.disc(...at(-5.2), 0.9 * s, '#000000'); B.c.forEach((v, i) => { if (B.p[i] === B.part) B.c[i] = -1; }); line(0.8, 1.2, 3.8, gold, 'metal'); poly([at(1.5, -0.9), at(5.6, -0.9), at(6.4, 0.3), at(5.2, 0.6), at(6, 1.4), at(1.5, 1.2)], steel); break;
+    case 'stick': { B.next('vol', 'grain'); const A = at(-2), Bp = at(15); B.limb(A, Bp, 1.5 * s, 1.0 * s, back ? '#6a4a28' : '#8a6234'); flat(B); const k = at(7, 0.6); B.seg(k[0], k[1], k[0] + 1, k[1] - 1, 1, '#5a3a1a'); break; }
+    case 'blackblade': { line(-3.6, 0, 1.4, '#1a1a1e'); flat(B); for (const l of [-3, -2, -1]) { const A = at(l, -0.8), Bp = at(l + 0.4, 0.8); B.seg(A[0], A[1], Bp[0], Bp[1], 0.8, '#3a3a40'); } line(0.6, 1.0, 3.2, '#2a2a30', 'metal'); poly([at(1.4, -0.85), at(14.5, -0.85), at(17.6, 0.3), at(17.2, 1.3), at(1.4, 1.2)], back ? '#2a2c34' : '#3a3e4a'); flat(B); { const A = at(2.5, 0.9), Bp = at(16.6, 0.9); B.seg(A[0], A[1], Bp[0], Bp[1], 1, back ? '#7a8294' : '#a8b4cc'); } break; }
+    case 'bloodblade': { line(-4.4, 0, 1.4, '#2a0a0e'); B.next('metal'); B.disc(...at(-4.8), 1.5 * s, '#c8a040'); line(0.6, 1.1, 4.4, '#5a0a10', 'metal'); poly([at(1.5, -0.8), at(9, -1.1), at(16, -0.4), at(21, 1.2), at(19.6, 2.0), at(13, 1.7), at(6, 1.4), at(1.5, 1.1)], back ? '#7a1018' : '#b8141e'); flat(B); { const A = at(2.5, -0.5), Bp = at(15, -0.2); B.seg(A[0], A[1], Bp[0], Bp[1], 1, back ? '#c8505a' : '#ff8a8a'); } break; }
+    case 'rodS': { line(-3, 6, 1, '#7a6a3a'); B.next('vol'); const A = at(6), Bp = at(26); B.seg(A[0], A[1], Bp[0], Bp[1], 0.7 * s, '#a89a5a'); flat(B); const t = at(26), u = at(27.5); B.seg(t[0], t[1], u[0], u[1], 0.6, '#e8e0c0'); break; }
+    case 'fruit': { B.next('vol'); B.disc(...at(2.4), 3 * s, '#e0281e'); flat(B); B.disc(...at(1.8, -1), 0.9 * s, '#ffb0a0'); B.next('vol'); { const A = at(4.6), Bp = at(5.8, 1.2); B.seg(A[0], A[1], Bp[0], Bp[1], 1.2 * s, '#3a8a2a'); } break; }
     case 'xingmu': poly([at(-1.6, -1.4), at(2.6, -1.4), at(2.6, 1.4), at(-1.6, 1.4)], colour || '#5a2a1a', 'vol'); flat(B); { const A = at(-1.4, -1.2), Bp = at(2.4, -1.2); B.seg(A[0], A[1], Bp[0], Bp[1], 1, '#8a4a2a'); } break;
     case 'abacus': { poly([at(-3, -3.4), at(3.4, -3.4), at(3.4, 3.4), at(-3, 3.4)], '#c89a30'); poly([at(-2.2, -2.6), at(2.6, -2.6), at(2.6, 2.6), at(-2.2, 2.6)], '#3a2010', 'vol'); flat(B); for (let r = -1.6; r <= 1.8; r += 1.1) for (let c = -1.4; c <= 1.8; c += 1.1) B.disc(...at(c, r), 0.7 * s, (c + r) % 2 > 0.5 ? '#f0d070' : '#e0b040'); break; }
     case 'brush': line(-2, 11, 1.1, colour || '#1e1e24'); B.next('metal'); B.disc(...at(-2.4), 1 * s, gold); poly([at(11, -0.8), at(13.6, 0), at(11, 0.8)], steel); break;
@@ -484,10 +496,54 @@ Object.assign(ANIMS, {
   cuffwalk: [0, 1, 2, 3].map((i) => { const a = [22, 0, -20, 0][i], k = [6, 22, 4, 22][i]; return C1({ fl: [a, k], bl: [-a, [4, 22, 6, 22][i]], fa: [36, 50], ba: [38, 52], by: i % 2 ? -0.8 : 0, lean: 6, bound: 1, w: null, w2: null }, 0.14); }),
   startle: [C1({ fa: [60, 60], ba: [50, 70], fl: [10, 6], bl: [-14, 6], lean: -10, tilt: -10, mouth: 1, w: 20, w2: 20 }, 0.6)],
 });
+// ---- book two: the fighting poses. Strikes are played once and hold their last frame (actors.js play()).
+Object.assign(ANIMS, {
+  stance: [F({ fa: [52, 44], ba: [24, 64], fl: [30, 34], bl: [-26, 28], lean: 10, by: 2.4, w: 112, w2: 100 }, 0.5), F({ fa: [52, 46], ba: [24, 66], fl: [30, 36], bl: [-26, 30], lean: 11, by: 2.9, w: 114, w2: 100 }, 0.5)],
+  stanceC: [F({ fa: [44, 30], ba: [20, 50], fl: [22, 20], bl: [-20, 18], lean: 4, by: 1.2, w: 60, eye: 'closed' }, 0.7), F({ fa: [44, 31], ba: [20, 51], fl: [22, 20], bl: [-20, 18], lean: 4, by: 1.5, w: 61, eye: 'closed' }, 0.7)],
+  runw: [0, 1, 2, 3].map((i) => { const a = [44, 5, -40, 5][i]; return F({ fl: [a, [20, 70, 10, 70][i]], bl: [-a + 5, [10, 70, 20, 70][i]], fa: [-20, 30], ba: [10 + a * 0.9, 100], w: -120, w2: 110, by: i % 2 ? -1.5 : 0, lean: 22 }, 0.08); }),
+  dash: [F({ fl: [64, 74], bl: [-56, 30], fa: [-34, 24], ba: [80, 40], lean: 36, by: 3.4, w: -116, w2: 120 }, 0.07), F({ fl: [40, 90], bl: [-40, 50], fa: [-30, 24], ba: [76, 40], lean: 38, by: 2.6, w: -112, w2: 120 }, 0.07)],
+  chop: [F({ fa: [176, 24], ba: [130, 50], fl: [20, 14], bl: [-24, 12], lean: -8, by: 0.5, w: 206 }, 0.07), F({ fa: [72, -12], ba: [-20, 60], fl: [40, 22], bl: [-34, 8], lean: 22, bx: 2.5, by: 2.5, w: 52, mouth: 1 }, 0.06), F({ fa: [40, -4], ba: [-10, 60], fl: [42, 26], bl: [-34, 10], lean: 26, bx: 2.5, by: 3.4, w: 22 }, 0.3)],
+  rise: [F({ fa: [10, 10], ba: [30, 60], fl: [36, 50], bl: [-30, 30], lean: 24, by: 4, w: -30 }, 0.07), F({ fa: [154, -12], ba: [-30, 40], fl: [18, 6], bl: [-28, 10], lean: -8, by: -1, bx: 1, w: 168, mouth: 1 }, 0.06), F({ fa: [140, -6], ba: [-20, 50], fl: [16, 6], bl: [-26, 10], lean: -6, w: 160 }, 0.3)],
+  hslash: [F({ fa: [62, 118], ba: [40, 60], fl: [24, 18], bl: [-26, 14], lean: -4, by: 1.5, w: -100 }, 0.07), F({ fa: [96, -4], ba: [-40, 40], fl: [40, 12], bl: [-38, 8], lean: 18, bx: 2, by: 2, w: 94, mouth: 1 }, 0.06), F({ fa: [76, -30], ba: [-30, 40], fl: [40, 14], bl: [-36, 10], lean: 20, bx: 2, by: 2.2, w: 52 }, 0.3)],
+  lunge: [F({ fa: [60, 60], ba: [70, 60], fl: [24, 24], bl: [-20, 16], lean: 0, bx: -2, w: 92 }, 0.07), F({ fa: [92, 0], ba: [-40, 30], fl: [56, 4], bl: [-50, 4], lean: 26, bx: 5, by: 2.6, w: 92, mouth: 1 }, 0.06), F({ fa: [88, 4], ba: [-36, 30], fl: [54, 6], bl: [-48, 4], lean: 24, bx: 5, by: 2.8, w: 90 }, 0.3)],
+  aerial: [F({ fa: [164, 14], ba: [110, 30], fl: [70, 110], bl: [30, 110], lean: -10, w: 196 }, 0.08), F({ fa: [62, -20], ba: [-30, 40], fl: [70, 100], bl: [20, 90], lean: 30, w: 26, mouth: 1 }, 0.3)],
+  tuck: [F({ fl: [112, 140], bl: [100, 144], fa: [60, 100], ba: [50, 100], lean: 40, by: 1, w: 150, w2: 150 }, 0.3)],
+  parry: [F({ fa: [72, 62], ba: [60, 84], fl: [26, 24], bl: [-28, 20], lean: -4, by: 1.8, w: 168 }, 0.3)],
+  block: [F({ fa: [164, 24], ba: [140, 40], fl: [26, 26], bl: [-28, 22], lean: -6, by: 2.2, w: 96 }, 0.3)],
+  lock: [F({ fa: [86, 34], ba: [80, 46], fl: [44, 12], bl: [-44, 6], lean: 22, bx: 2, by: 1.5, w: 132, eye: 'hurt' }, 0.12), F({ fa: [86, 36], ba: [80, 48], fl: [44, 13], bl: [-44, 6], lean: 23, bx: 2.2, by: 1.7, w: 134, eye: 'hurt', mouth: 1 }, 0.12)],
+  sweep: [F({ fl: [86, 0], bl: [70, 150], fa: [40, 60], ba: [-50, 40], lean: 34, by: 10, w: 120 }, 0.3)],
+  kick2: [F({ fl: [60, 90], bl: [-8, 4], fa: [40, 90], ba: [-30, 60], lean: -6, w: 130 }, 0.05), F({ fl: [98, 0], bl: [-12, 2], fa: [30, 100], ba: [-50, 40], lean: -18, bx: -1, w: 140, mouth: 1 }, 0.3)],
+  land: [F({ fl: [74, 124], bl: [-6, 112], fa: [-40, 30], ba: [86, 40], lean: 32, by: 8.5, w: -118 }, 0.3)],
+  skid: [F({ fl: [34, 24], bl: [-40, 16], fa: [44, 60], ba: [-56, 30], lean: -14, by: 2.8, w: 70, eye: 'hurt' }, 0.3)],
+  kneelB: [F({ fl: [86, 88], bl: [0, 92], by: 7.2, lean: 20, fa: [42, 18], ba: [30, 44], w: 4, tilt: 10, mouth: 1, eye: 'hurt' }, 0.35), F({ fl: [86, 88], bl: [0, 92], by: 7.6, lean: 23, fa: [42, 18], ba: [30, 44], w: 4, tilt: 12, mouth: 0, eye: 'hurt' }, 0.35)],
+  pant: [F({ fa: [30, 20], ba: [20, 30], fl: [20, 18], bl: [-18, 14], lean: 16, by: 1.6, w: 30, mouth: 1 }, 0.3), F({ fa: [30, 20], ba: [20, 30], fl: [20, 18], bl: [-18, 14], lean: 19, by: 2.2, w: 28 }, 0.3)],
+  sheathe: [F({ fa: [24, 96], ba: [20, 90], fl: [10, 4], bl: [-10, 4], lean: 2, w: -86 }, 0.3)],
+  draw: [C1({ fa: [26, 112], ba: [-14, 40], fl: [44, 44], bl: [-42, 32], lean: 22, by: 4.4, w: 20, eye: 'closed' }, 0.6), C1({ fa: [26, 112], ba: [-14, 40], fl: [44, 44], bl: [-42, 32], lean: 22, by: 4.8, w: 20, eye: 'closed' }, 0.6)],
+  heaven: [F({ fa: [172, 0], ba: [-40, 30], fl: [52, 24], bl: [-52, 10], lean: 4, by: 3, w: 180 }, 0.3)],
+  after: [F({ fa: [60, -40], ba: [-30, 30], fl: [50, 30], bl: [-50, 14], lean: 30, by: 4, bx: 2, w: 20 }, 0.3)],
+  hurtB: [F({ fa: [-30, 30], ba: [-60, 30], fl: [14, 24], bl: [-28, 18], lean: -24, tilt: -18, eye: 'hurt', mouth: 1, w: 30 }, 0.3)],
+  grabA: [F({ fa: [82, 15], ba: [-20, 40], fl: [20, 8], bl: [-18, 6], lean: 6, w: 20 }, 0.3)],
+  hoisted: [C1({ fa: [-20, 30], ba: [-40, 30], fl: [20, 40], bl: [-10, 30], lean: -6, tilt: 10, mouth: 1 }, 0.2), C1({ fa: [10, 40], ba: [-50, 30], fl: [40, 60], bl: [-20, 20], lean: -4, tilt: 6 }, 0.2)],
+  fall2: [F({ fa: [150, 30], ba: [170, 20], fl: [10, 40], bl: [-30, 60], lean: -20, tilt: -20, eye: 'hurt', mouth: 1, w: 160 }, 0.2)],
+  lie: [C1({ fa: [-100, 10], ba: [-70, 10], fl: [88, 4], bl: [82, 10], lean: -90, by: 13, bx: 4, tilt: -90, eye: 'closed', w: null, w2: null }, 1)],
+  sitF: [C1({ fa: [60, 40], ba: [30, 70], fl: [88, 92], bl: [80, 95], lean: 4, by: 7.5, w: 120 }, 1)],
+  rodcast: [F({ fa: [150, 10], ba: [-10, 20], fl: [24, 10], bl: [-20, 8], lean: -6, w: 160 }, 0.08), F({ fa: [84, -6], ba: [-10, 20], fl: [36, 10], bl: [-30, 8], lean: 16, bx: 1.5, w: 86 }, 0.3)],
+  rodflick: [F({ fa: [100, 30], ba: [-10, 20], fl: [24, 14], bl: [-24, 10], lean: 4, w: 140 }, 0.06), F({ fa: [70, -20], ba: [-10, 20], fl: [30, 14], bl: [-28, 10], lean: 12, bx: 1, w: 50 }, 0.3)],
+  rodguard: [F({ fa: [60, 50], ba: [-10, 20], fl: [24, 20], bl: [-22, 16], lean: 2, by: 1.2, w: 120 }, 0.5), F({ fa: [60, 51], ba: [-10, 20], fl: [24, 20], bl: [-22, 16], lean: 2, by: 1.5, w: 121 }, 0.5)],
+  palmB: [F({ fa: [88, 10], ba: [-20, 30], fl: [10, 4], bl: [-10, 4], lean: 6, w: 20 }, 0.6)],
+  climb: [F({ fa: [170, 10], ba: [120, 50], fl: [70, 90], bl: [-10, 30], lean: 10, w: null, calm: 1 }, 0.14), F({ fa: [120, 50], ba: [170, 10], fl: [-10, 30], bl: [70, 90], lean: 10, w: null, calm: 1 }, 0.14)],
+  eat: [C1({ fa: [130, 140], ba: [20, 60], fl: [6, 0], bl: [-6, 0], lean: 0, tilt: -6, mouth: 1 }, 0.25), C1({ fa: [130, 130], ba: [20, 60], fl: [6, 0], bl: [-6, 0], lean: 0, tilt: -4 }, 0.25)],
+  burn: [C1({ fa: [40, 80], ba: [50, 90], fl: [30, 40], bl: [-30, 30], lean: 24, by: 3, tilt: 14, eye: 'hurt', mouth: 1 }, 0.12), C1({ fa: [44, 84], ba: [54, 94], fl: [30, 42], bl: [-30, 32], lean: 27, by: 3.5, tilt: 18, eye: 'hurt', mouth: 1 }, 0.12)],
+  meditate: [C1({ fa: [36, 70], ba: [30, 74], fl: [88, 150], bl: [80, 150], lean: 0, by: 9.5, eye: 'closed' }, 0.8), C1({ fa: [36, 70], ba: [30, 74], fl: [88, 150], bl: [80, 150], lean: 0, by: 9.8, eye: 'closed' }, 0.8)],
+  hug: [C1({ fa: [80, 70], ba: [76, 76], fl: [14, 6], bl: [-14, 6], lean: 14, tilt: 8, eye: 'closed' }, 0.8)],
+  cry: [C1({ fa: [120, 140], ba: [110, 140], fl: [6, 0], bl: [-6, 0], lean: 10, tilt: 14, eye: 'closed', mouth: 1 }, 0.25), C1({ fa: [118, 142], ba: [108, 140], fl: [6, 0], bl: [-6, 0], lean: 12, tilt: 16, eye: 'closed', by: 0.4 }, 0.25)],
+});
+for (const n of ['stance', 'pant', 'kneelB', 'rodguard', 'sitF', 'draw', 'meditate']) if (!ANIMS[n + '~']) ANIMS[n + '~'] = [ANIMS[n][0], { o: { ...ANIMS[n][0].o, mouth: 1 }, t: 0.13 }].map((f) => ({ o: f.o, t: 0.13 }));
 ANIMS.idle = ANIMS.idle; ANIMS.guard = ANIMS.guard;
 // talking: the same pose with the mouth opening and closing
 for (const n of ['stand', 'hold', 'point', 'think', 'arms', 'shrug', 'salute', 'sit', 'kneel', 'idle', 'crouch', 'fish', 'startle', 'cuffed']) ANIMS[n + '~'] = [ANIMS[n][0], { o: { ...ANIMS[n][0].o, mouth: 1 }, t: 0.13 }].map((f) => ({ o: f.o, t: 0.13 }));
 export const ANIM_NAMES = Object.keys(ANIMS);
+export { Buf, flat };
 
 // one frame of a look as a canvas
 export function frameCanvas(L, anim, i) { const px = drawFrame(L, ANIMS[anim][i].o), c = document.createElement('canvas'); c.width = FW; c.height = FH; c.getContext('2d').putImageData(new ImageData(px, FW, FH), 0, 0); return c; }

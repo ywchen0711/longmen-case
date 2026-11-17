@@ -1,6 +1,6 @@
 // 第二回 醒木三更: dinner and the threat; the storyteller's night show behind the eight-foot screen; the knock at
 // midnight; the blood under the door; the locked room; the brothers in chains.
-import { S, A, M, P, F, E, LOOK, H, JUGGLE, C, CU, TWO, L, N, TITLE, CARD, POEM, MOVE, FX, TRIG, W, MUS, SND, RAIN, SLOW, TAGS, FADE } from '../dsl.js?v=1';
+import { S, A, M, P, F, E, LOOK, H, JUGGLE, C, CU, TWO, L, N, TITLE, CARD, POEM, MOVE, FX, TRIG, W, MUS, SND, RAIN, SLOW, TAGS, FADE } from '../dsl.js?v=2';
 const HALL = [
   A('baixian', 'baixianX', 'stageFront', { f: -1 }), A('tie', 'tie', [-5, -0.75], { f: 1, a: 'sit' }), A('kuchan', 'kuchan', 'mat', { f: 1, a: 'sit' }),
   A('liu', 'liu', [-0.9, -1.75], { f: 1, a: 'sit' }), A('xiaolian', 'xiaolian', [0, -1.75], { f: -1 }),
