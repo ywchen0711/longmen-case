@@ -1,6 +1,6 @@
 // 終回 水退: dawn, the river falls, the chains come off; days later the storyteller tells the tale, and knows a little
 // too much; his left hand folds a playbill into a crane.
-import { S, A, M, P, F, E, LOOK, H, JUGGLE, C, CU, TWO, L, N, TITLE, CARD, FX, TRIG, W, MUS, SND, RAIN, FADE, END } from '../dsl.js?v=2';
+import { S, A, M, P, F, E, LOOK, H, JUGGLE, C, CU, TWO, L, N, TITLE, CARD, FX, TRIG, W, MUS, SND, RAIN, FADE, END } from '../dsl.js?v=3';
 export default {
   id: 'ch6', zh: '終回　水退', en: 'Final Chapter: The Water Falls',
   beats: [

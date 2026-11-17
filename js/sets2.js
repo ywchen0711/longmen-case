@@ -8,9 +8,9 @@
 //   ledge   the high ledge where the red fruit grows above a sea of clouds
 //   road    a mountain road (forest, or along a cliff, or by a lake at sunset)
 //   maple   血楓谷: the Blood Saber hall among red maples (chapter six)
-import { THREE, PX, rng, cutout, T, sh, box, lam, std, texMat, floor, wall, roof, lattice, pillar, railing, sign, jar, barrel, tree } from './kit.js?v=2';
-import { waterMaterial, mist, shaft, lantern, glow } from './fx.js?v=2';
-import { SETS } from './sets.js?v=2';
+import { THREE, PX, rng, cutout, T, sh, box, lam, std, texMat, floor, wall, roof, lattice, pillar, railing, sign, jar, barrel, tree } from './kit.js?v=3';
+import { waterMaterial, mist, shaft, lantern, glow } from './fx.js?v=3';
+import { SETS } from './sets.js?v=3';
 
 const V3 = THREE.Vector3;
 // a pixel-art cut-out; far ones use mip-maps so they don't shimmer

@@ -202,3 +202,32 @@ body.paused #pausedTag { display: block; }
   #title .l1 { font-size: 40px; } #title .l2 { font-size: 18px; } #title .l3 { display: none; }
   #title .tb { gap: 5px; } #title .tb button { padding: 6px; font-size: 14px; } #title .bks .bk { padding: 5px 4px; font-size: 13px; } #title .bks .bk b { font-size: 16px; }
 }
+
+/* iPhone and iPad: taps advance at once (no double-tap zoom), no rubber-band scrolling or long-press callouts, and
+   nothing under the notch, the rounded corners or the home bar (env(safe-area-inset-*) is 0 everywhere else) */
+html, body { touch-action: manipulation; overscroll-behavior: none; -webkit-touch-callout: none; -webkit-text-size-adjust: 100%; }
+body { position: fixed; inset: 0; width: 100%; }
+input[type=range] { touch-action: pan-x; }
+#hud { top: calc(8px + env(safe-area-inset-top, 0px)); right: calc(8px + env(safe-area-inset-right, 0px)); }
+#box { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+#ask { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+#title .tf { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+.panel { max-height: calc(100% - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; }
+@media (min-aspect-ratio: 1/1) { #box, #ask { width: min(1040px, calc(100% - 24px - 2 * max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)))); } #ask { width: min(720px, calc(100% - 20px - 2 * max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)))); } }
+@media (max-aspect-ratio: 1/1) {
+  #box { bottom: 0; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+  #ask { bottom: 0; padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+  #hud { top: auto; }
+}
+@media (max-height: 500px) and (min-aspect-ratio: 1/1) { #box, #ask { bottom: calc(6px + env(safe-area-inset-bottom, 0px)); } #title .tf { bottom: calc(4px + env(safe-area-inset-bottom, 0px)); } }
+/* touch: buttons get a little more room for a fingertip */
+@media (pointer: coarse) { #hud button { min-height: 34px; min-width: 34px; } }
+/* a phone on its side is very short: the title sits beside its buttons instead of above them */
+@media (max-height: 500px) and (min-aspect-ratio: 1/1) {
+  #title { flex-direction: row; gap: 5vw; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 22px env(safe-area-inset-left, 0px); }
+  #title .l1 { font-size: 46px; } #title .l2 { font-size: 20px; } #title .l3 { font-size: 11px; margin-top: 6px; }
+  #title .tb { width: min(330px, 46vw); gap: 6px; }
+  #title .tb button { padding: 6px; font-size: 15px; }
+  #title .bks .bk { padding: 5px 4px; font-size: 13px; } #title .bks .bk b { font-size: 16px; }
+  #title .tf { font-size: 11px; }
+}

@@ -6,7 +6,7 @@ import { RenderPass } from '../lib/addons/RenderPass.js';
 import { UnrealBloomPass } from '../lib/addons/UnrealBloomPass.js';
 import { OutputPass } from '../lib/addons/OutputPass.js';
 import { ShaderPass } from '../lib/addons/ShaderPass.js';
-import { frameCanvas, ANIMS, ANIM_NAMES, FW, FH, OY, PPU } from './art.js?v=2';
+import { frameCanvas, ANIMS, ANIM_NAMES, FW, FH, OY, PPU } from './art.js?v=3';
 export { THREE };
 export const PX = 1 / 16;
 
@@ -54,7 +54,12 @@ const Grade = {
 
 export function createView(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  // iOS may drop the WebGL context under memory pressure or after a long time in the background; let it come back
+  canvas.addEventListener('webglcontextlost', (e) => e.preventDefault());
+  // the post-processing chain keeps several half-float buffers the size of the screen: on phones and tablets the pixel
+  // count is capped (about 2.4 million) so an iPad Pro or a big iPhone stays well inside its memory
+  const capPR = () => { const touch = (navigator.maxTouchPoints || 0) > 0, w = window.innerWidth, h = window.innerHeight, pr = Math.min(window.devicePixelRatio || 1, 1.5); return touch ? Math.max(1, Math.min(pr, Math.sqrt(2400000 / Math.max(1, w * h)))) : pr; };
+  renderer.setPixelRatio(capPR());
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.08;
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(30, 16 / 9, 0.5, 400);
@@ -68,7 +73,7 @@ export function createView(canvas) {
   const V = {
     renderer, scene, camera, composer, bloom, grade, tsH, tsV, shake: 0, shakeT: 0,
     resize() {
-      const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+      const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight; renderer.setPixelRatio(capPR()); composer.setPixelRatio?.(renderer.getPixelRatio()); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
       composer.setSize(w, h); grade.uniforms.asp.value = w / h; const s = renderer.getDrawingBufferSize(new THREE.Vector2()); tsH.uniforms.res.value.copy(s); tsV.uniforms.res.value.copy(s);
       // a narrow screen sees less of the road: pull the camera back a little
       V.portrait = w / h < 1.2;

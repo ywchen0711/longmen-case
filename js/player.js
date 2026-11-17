@@ -2,19 +2,19 @@
 // clues, waits and deductions hold the story until the reader goes on (or Auto/Skip move on by themselves). It can
 // jump to any beat by rebuilding the last set before it and replaying what came after instantly, which is how
 // chapter select, Continue and the test hooks work.
-import { THREE, prefillLooks } from './render.js?v=2';
-import { Diorama } from './scene.js?v=2';
-import { SETS } from './sets.js?v=2';
-import './sets2.js?v=2';
-import './beasts.js?v=2';
-import { Actor } from './actors.js?v=2';
-import { Rain, Effects } from './fx.js?v=2';
-import { BOOKS } from './books.js?v=2';
-import { Fx2 } from './fx2.js?v=2';
-import { runAct } from './fightrun.js?v=2';
-import { POEMS, CLUES, ASKS, callId } from './data.js?v=2';
-import * as AU from './audio.js?v=2';
-import { UI } from './ui.js?v=2';
+import { THREE, prefillLooks } from './render.js?v=3';
+import { Diorama } from './scene.js?v=3';
+import { SETS } from './sets.js?v=3';
+import './sets2.js?v=3';
+import './beasts.js?v=3';
+import { Actor } from './actors.js?v=3';
+import { Rain, Effects } from './fx.js?v=3';
+import { BOOKS } from './books.js?v=3';
+import { Fx2 } from './fx2.js?v=3';
+import { runAct } from './fightrun.js?v=3';
+import { POEMS, CLUES, ASKS, callId } from './data.js?v=3';
+import * as AU from './audio.js?v=3';
+import { UI } from './ui.js?v=3';
 
 const ease = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : 0.5 - Math.cos(t * Math.PI) / 2);
 const CAMKEYS = ['x', 'y', 'z', 'd', 'yaw', 'pitch', 'fov'];

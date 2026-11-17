@@ -11,7 +11,7 @@
 export const FW = 160, FH = 168;          // frame size in pixels; the feet stand at (80, 152)
 export const OX = 80, OY = 152;
 export const PPU = 32;                     // pixels to a unit of the world
-import { HEADS, HATS, BEARDS, ANCHOR } from './heads.js?v=2';
+import { HEADS, HATS, BEARDS, ANCHOR } from './heads.js?v=3';
 const R = Math.PI / 180;
 
 const hexRGB = (c) => { const n = parseInt(c.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };

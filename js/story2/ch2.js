@@ -1,6 +1,6 @@
 // 第二回 谷底: he wakes in the hidden valley; the one-armed fisherman; the cave of sword marks; cutting one leaf.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT } from '../dsl.js?v=2';
-import { f } from '../fight.js?v=2';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT } from '../dsl.js?v=3';
+import { f } from '../fight.js?v=3';
 
 const V3 = (P, x, y, z) => new P.tmp.constructor(x, y, z);
 export default {

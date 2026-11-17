@@ -1,5 +1,5 @@
 // 序章 龍門江湖: the state of the Longmen jianghu, told over the map diorama.
-import { S, C, N, TITLE, CARD, W, MUS, SND, FX, FADE } from '../dsl.js?v=2';
+import { S, C, N, TITLE, CARD, W, MUS, SND, FX, FADE } from '../dsl.js?v=3';
 export default {
   id: 'ch0', zh: '序章　龍門江湖', en: 'Prologue: The Longmen Jianghu',
   beats: [

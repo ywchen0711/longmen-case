@@ -1,8 +1,8 @@
 // 第五回 出谷: out of the valley; an ambush on the road taken in one long shot, calm and minimal; 冷笑天 on the cliff
 // road: one exchange, 笑盡天下 against the new stroke, and they cancel.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT } from '../dsl.js?v=2';
-import { f } from '../fight.js?v=2';
-import { COL } from './moves.js?v=2';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT } from '../dsl.js?v=3';
+import { f } from '../fight.js?v=3';
+import { COL } from './moves.js?v=3';
 
 const V3 = (P, x, y, z) => new P.tmp.constructor(x, y, z);
 // a calm cut: a short bright line, a small step; the one cut down falls a beat later (o.fall)

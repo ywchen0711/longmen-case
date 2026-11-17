@@ -47,6 +47,14 @@ Every clue the solution uses is shown before the reveal. Wrong answers get an in
 
 中 / EN switches between Chinese and English text (the voices are Chinese). Progress, the language and volumes are saved in the browser.
 
+### iPhone and iPad
+
+Tap anywhere to go on. Voices and music start with the first tap and then keep playing line after line by themselves
+(the game reuses a few unlocked audio elements, which iOS requires), and pick up again after a call or the lock screen.
+On a phone held sideways the title sits beside its buttons. The drawing resolution is capped on phones and tablets and
+each set's textures are freed when the scene changes, so the long film stays within an iPhone's memory. Your place is
+saved when the page is hidden. Add to Home Screen for a full-screen app.
+
 ## 卷二　斷崖刀心 · Book Two: The Blade Heart Beneath the Cliff
 
 江湖上一直有一句話：刀客一生，只有一次奇遇。血刀門門主「斷魂刀」厲寒山來到龍門，奕叡的刀被他一刀折斷，奕碩被擄走，奕叡自己被打落斷魂崖。崖底的山谷裡，有一個不肯說出名字的獨臂漁翁、一面刻滿刀痕的石壁、一顆白猿守著的赤陽果。月圓之夜，他要帶著一把沒有名字的黑刀，去血楓谷把弟弟接回來。

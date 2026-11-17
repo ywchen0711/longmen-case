@@ -4,9 +4,27 @@
 let ctx = null, master, musicGain, sfxGain, voiceGain, ambGain, noiseBuf;
 const state = { music: null, musicEl: null, track: '', vol: { music: 0.5, sfx: 0.8, voice: 1 }, muted: false, rain: 0, river: 0 };
 export const AU = state;
+// iPhone and iPad: sound may only start inside a tap or key press (touchend / click / keydown), and each new <audio>
+// element would need its own tap. So the music and the voices use a few elements that are unlocked on the first tap
+// and then reused for every track and every line (only their src changes); they play through Web Audio gains (iOS
+// ignores element volume). iOS also suspends the context ('interrupted') for calls, Siri and the lock screen, and
+// the ring/silent switch mutes it unless the audio session is 'playback'.
+const SILENT = 'data:audio/wav;base64,UklGRuwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YcgAAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+const mkEl = () => { const el = new Audio(); el.preload = 'auto'; el.setAttribute('playsinline', ''); return el; };
+const musicEls = [mkEl(), mkEl()].map((el) => ({ el, g: null, busy: false, t: 0 })), voiceEl = { el: mkEl(), src: null };
+let unlocked = false, noCtx = false;
+const resume = () => { if (ctx && ctx.state !== 'running') { try { const r = ctx.resume(); if (r && r.catch) r.catch(() => {}); } catch (e) { /* needs a tap */ } } };
+function unlockEls() {
+  if (unlocked) return; unlocked = true;
+  for (const el of [...musicEls.map((m) => m.el), voiceEl.el]) if (!el.getAttribute('src')) { el.src = SILENT; const r = el.play(); if (r && r.catch) r.catch(() => {}); }
+}
 export function unlock() {
-  if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
-  try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* older iOS */ }
+  if (ctx) { resume(); unlockEls(); if (state.music && state.music.el.paused && !state.paused) state.music.el.play().catch(() => {}); return; }
+  if (noCtx) { unlockEls(); return; }
+  try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { noCtx = true; ctx = null; unlockEls(); if (state.pendingTrack) { const t = state.pendingTrack; state.pendingTrack = null; state.track = ''; music(t); } return; }
+  try { const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); } catch (e) { /* ignore */ }
+  unlockEls();
   master = ctx.createGain(); master.connect(ctx.destination);
   musicGain = ctx.createGain(); musicGain.gain.value = state.vol.music; musicGain.connect(master);
   sfxGain = ctx.createGain(); sfxGain.gain.value = state.vol.sfx; sfxGain.connect(master);
@@ -14,8 +32,16 @@ export function unlock() {
   ambGain = ctx.createGain(); ambGain.gain.value = 0.9; ambGain.connect(master);
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   startAmbience();
-  if (state.pendingTrack) { const t = state.pendingTrack; state.pendingTrack = null; music(t); }
+  for (const m of musicEls) { try { const s = ctx.createMediaElementSource(m.el); m.g = ctx.createGain(); m.g.gain.value = 0; s.connect(m.g); m.g.connect(musicGain); } catch (e) { m.g = null; } }
+  try { voiceEl.src = ctx.createMediaElementSource(voiceEl.el); voiceEl.src.connect(voiceGain); } catch (e) { voiceEl.src = null; }
+  if (state.pendingTrack) { const t = state.pendingTrack; state.pendingTrack = null; state.track = ''; music(t); }
 }
+// every tap, click and key press unlocks (capture phase, so nothing on the page can swallow it)
+for (const ev of ['touchend', 'click', 'keydown']) addEventListener(ev, () => unlock(), { capture: true, passive: true });
+// back from a call, the lock screen or another app: pick the sound up again
+function wake() { if (document.hidden) return; resume(); if (state.music && state.music.el.paused && unlocked && !state.paused) state.music.el.play().catch(() => {}); }
+document.addEventListener('visibilitychange', () => { if (document.hidden) { if (state.music) state.music.el.pause(); } else wake(); });
+addEventListener('pageshow', wake); addEventListener('focus', wake);
 export function setMuted(m) { state.muted = m; if (master) master.gain.value = m ? 0 : 1; }
 const now = () => ctx.currentTime;
 function noise(dur, filt, f0, f1, q = 1, gain = 0.5, when = 0, dest = sfxGain) {
@@ -99,24 +125,33 @@ export function sfx(name, arg) { if (!ctx || state.muted) return; try { SFX[name
 const TRACKS = { title: 'title', story: 'story', fog: 'fog', village: 'village', curse: 'curse', cave: 'cave', reveal: 'reveal', battle: 'battle', melancholy: 'melancholy', ending: 'ending', temple: 'temple', yomi: 'yomi', dojo: 'dojo' };
 export function music(track, fade = 1.6) {
   if (track === state.track) return; state.track = track;
-  if (!ctx) { state.pendingTrack = track; return; }
-  const old = state.music; if (old) { old.g.gain.setTargetAtTime(0, now(), fade / 3); setTimeout(() => { old.el.pause(); old.el.src = ''; }, fade * 1500); }
+  if (!ctx && !noCtx) { state.pendingTrack = track; return; }
+  const old = state.music;
+  if (old) {
+    if (old.g) old.g.gain.setTargetAtTime(0, now(), fade / 3); else old.el.volume = 0;
+    old.busy = true; clearTimeout(old.t); old.t = setTimeout(() => { old.el.pause(); old.busy = false; }, fade * 1500);
+  }
   state.music = null; if (!track || !TRACKS[track]) return;
-  const el = new Audio('audio/music/' + TRACKS[track] + '.mp3'); el.loop = true; el.crossOrigin = 'anonymous';
-  const src = ctx.createMediaElementSource(el), g = ctx.createGain(); g.gain.value = 0; src.connect(g); g.connect(musicGain);
-  g.gain.setTargetAtTime(1, now() + 0.1, fade / 3); el.play().catch(() => {}); state.music = { el, g };
+  const m = musicEls.find((x) => x !== old && !x.busy) || musicEls.find((x) => x !== old);
+  clearTimeout(m.t); m.busy = false;
+  m.el.loop = true; m.el.src = 'audio/music/' + TRACKS[track] + '.mp3';
+  if (m.g) { m.g.gain.cancelScheduledValues(now()); m.g.gain.value = 0; m.g.gain.setTargetAtTime(1, now() + 0.1, fade / 3); } else { try { m.el.volume = state.vol.music; } catch (e) { /* read-only */ } }
+  if (!state.paused) m.el.play().catch(() => {}); state.music = m;
 }
 export function setVolume(kind, v) { state.vol[kind] = v; const g = { music: musicGain, sfx: sfxGain, voice: voiceGain }[kind]; if (g) g.gain.value = v; }
 export function duck(on) { if (musicGain) musicGain.gain.setTargetAtTime(on ? state.vol.music * 0.55 : state.vol.music, now(), 0.2); }
 
 // voices: one line at a time
 let vEl = null, vSrc = null;
+// one element for every line: unlocked by the first tap, so the lines that follow one another by themselves (auto
+// mode, book two) keep playing on iOS
 export function voice(file, rate = 1) {
   stopVoice(); if (!file || state.muted) return null;
-  const el = new Audio('audio/v/' + file); el.playbackRate = rate; el.preservesPitch = true;
-  if (ctx) { try { vSrc = ctx.createMediaElementSource(el); vSrc.connect(voiceGain); } catch (e) { /* plays direct */ } }
+  const el = voiceEl.el; resume();
+  el.src = 'audio/v/' + file; el.playbackRate = rate; el.preservesPitch = true; el.webkitPreservesPitch = true;
+  if (!voiceEl.src) { try { el.volume = state.vol.voice; } catch (e) { /* read-only on iOS */ } }
   el.play().catch(() => {}); vEl = el; duck(true); el.onended = () => duck(false); return el;
 }
-export function pauseVoice(on) { if (!vEl) return; if (on) vEl.pause(); else vEl.play().catch(() => {}); if (state.music) { if (on) state.music.el.pause(); else state.music.el.play().catch(() => {}); } }
+export function pauseVoice(on) { state.paused = on; if (vEl) { if (on) vEl.pause(); else vEl.play().catch(() => {}); } if (state.music) { if (on) state.music.el.pause(); else state.music.el.play().catch(() => {}); } }
 export function stopVoice() { if (vEl) { vEl.pause(); vEl.onended = null; vEl = null; duck(false); } }
 export function voicePlaying() { return !!(vEl && !vEl.paused && !vEl.ended); }

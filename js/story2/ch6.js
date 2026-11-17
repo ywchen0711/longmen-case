@@ -1,8 +1,8 @@
 // 第六回 血楓谷: 奕碩 at the post, kicking pebbles; the duel in a storm of red leaves: the lock, 血河九斬 deflected
 // one by one, the tenth cut, 奕碩's whirlwind ball, and 一刀・天河.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT, FLAKES, TRIG, JUGGLE } from '../dsl.js?v=2';
-import { f } from '../fight.js?v=2';
-import { COL } from './moves.js?v=2';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT, FLAKES, TRIG, JUGGLE } from '../dsl.js?v=3';
+import { f } from '../fight.js?v=3';
+import { COL } from './moves.js?v=3';
 
 const V3 = (P, x, y, z) => new P.tmp.constructor(x, y, z);
 // one of the nine: a red crescent from 厲寒山, turned aside by 奕叡 with his eyes shut; where it goes after (then)

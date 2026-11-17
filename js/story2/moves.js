@@ -1,5 +1,5 @@
 // Pieces of choreography the fights of book two are made from. Each returns a list of fight actions (fight.js).
-import { f } from '../fight.js?v=2';
+import { f } from '../fight.js?v=3';
 
 export const POSE = { down: 'chop', up: 'rise', h: 'hslash', thrust: 'lunge', aerial: 'aerial', spin: 'spin', draw: 'after', big: 'chop' };
 export const COL = { rui: '#8ac8ff', rui2: '#cfe8ff', li: '#ff2a3a', weng: '#c8ffe0', xd: '#ff9a8a', ape: '#ffffff', tian: '#ff5a3a' };

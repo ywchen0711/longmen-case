@@ -1,11 +1,11 @@
 // Boots the novel: the renderer, the title screen over 聽雨樓 in the rain, input (mouse, touch, keyboard, gamepad),
 // the frame loop, and window.G for tests (jump to a chapter and line, step frames, run everything quickly).
-import { createView } from './render.js?v=2';
-import { Player } from './player.js?v=2';
-import { UI } from './ui.js?v=2';
-import * as AU from './audio.js?v=2';
-import { BOOKS } from './books.js?v=2';
-import { ASKS } from './data.js?v=2';
+import { createView } from './render.js?v=3';
+import { Player } from './player.js?v=3';
+import { UI } from './ui.js?v=3';
+import * as AU from './audio.js?v=3';
+import { BOOKS } from './books.js?v=3';
+import { ASKS } from './data.js?v=3';
 
 const $ = (s) => document.querySelector(s);
 const V = createView($('#c'));
@@ -44,6 +44,9 @@ const act = {
   menu: () => UI.menu(),
   title: () => { UI.close(); P.setPaused(false); titleScreen(); },
 };
+// iOS Safari only sends a click for a tap on an element it thinks is clickable; a listener on the document alone
+// is not enough. These empty handlers make a tap anywhere on the picture count (and so advance the story).
+for (const el of [$('#view'), $('#app'), $('#title'), $('#card'), $('#poem'), $('#callout')]) if (el) el.onclick = () => {};
 document.addEventListener('click', (e) => {
   AU.unlock();
   const b = e.target.closest('[data-act]'); if (b) { e.stopPropagation(); act[b.dataset.act]?.(); return; }
@@ -87,6 +90,13 @@ function pollPad() {
   if (hit(2)) act.auto(); if (hit(3)) act.book(); if (hit(4)) act.skip(); if (hit(9)) act.menu(); if (hit(8)) act.log();
   P.forceSkip = !!now[5];
 }
+
+// iPhone and iPad close background tabs without warning: keep the place in the story when the page is hidden
+const keepPlace = () => { try { if (P.playing) P.save(); } catch (e) { /* no saving */ } };
+document.addEventListener('visibilitychange', () => { if (document.hidden) keepPlace(); });
+addEventListener('pagehide', keepPlace);
+// no pinch zoom on iPhone and iPad (the viewport already forbids it; older iOS versions need this too)
+for (const ev of ['gesturestart', 'gesturechange']) document.addEventListener(ev, (e) => e.preventDefault());
 
 // ---- the loop
 let last = performance.now();

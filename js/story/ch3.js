@@ -1,5 +1,5 @@
 // 第三回 密室: the brothers, in chains, search the locked room; six clues; the first deduction.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, CLUE, ASK, FX, TRIG, W, MUS, SND, FADE } from '../dsl.js?v=2';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, CLUE, ASK, FX, TRIG, W, MUS, SND, FADE } from '../dsl.js?v=3';
 const ROOM = [
   TRIG('cut', 1), TRIG('broken'), TRIG('blood'), TRIG('murder'), TRIG('snuff'), TRIG('blade'), TRIG('palm'), TRIG('spill'),
   A('qian', 'qianA', 'body', { f: 1, a: 'dead' }), A('bird', 'bird', [5.2, -4.45], { y: 1.58, f: -1 }),

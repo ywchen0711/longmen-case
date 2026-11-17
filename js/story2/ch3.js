@@ -1,8 +1,8 @@
 // 第三回 瀑下: days under the waterfall (knocked down, holding, splitting the water); the red fruit and the white ape
 // he must not hurt; the fruit's fire, and the old man guiding it; the waterfall parts for a full breath.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT, RAIN } from '../dsl.js?v=2';
-import { f } from '../fight.js?v=2';
-import { COL } from './moves.js?v=2';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT, RAIN } from '../dsl.js?v=3';
+import { f } from '../fight.js?v=3';
+import { COL } from './moves.js?v=3';
 
 const V3 = (P, x, y, z) => new P.tmp.constructor(x, y, z);
 const splash = (x, z, n = 30) => f.fn((P) => { P.fx2.dust(V3(P, x, -0.1, z), n, { color: '#ffffff', size: 0.5, up: 4, speed: 3, floor: -0.1, life: 1.2 }); });

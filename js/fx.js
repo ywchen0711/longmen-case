@@ -2,7 +2,7 @@
 // flowing pixel river that mirrors the lanterns and rings with raindrops, mist, light shafts, hanging lanterns that
 // sway, candles that flicker (and can be snuffed), emote marks over heads, and the moves (sword qi, palm wind,
 // whirlwind ball, iron chain, ink darts, a dart from the dark).
-import { THREE, PX, cutout, cutoutMesh, pxTex, rng } from './render.js?v=2';
+import { THREE, PX, cutout, cutoutMesh, pxTex, rng } from './render.js?v=3';
 
 const canvasTex = (c, nearest = true) => { const t = new THREE.CanvasTexture(c); if (nearest) { t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; } t.colorSpace = THREE.SRGBColorSpace; return t; };
 const softTex = (() => { let t; return () => t || (t = canvasTex(cutout(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.35, 'rgba(255,255,255,0.45)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); }), false)); })();

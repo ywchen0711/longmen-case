@@ -2,7 +2,7 @@
 // planks, tiled roofs with upturned eaves, lattice windows that glow, tables, benches, beds, stairs, railings,
 // doors with a bolt, the eight-foot screen, signboards, cut-out plants, and a few props from the Ninja Adventure
 // pack (CC0) cut out of its tile sheets.
-import { THREE, PX, pxTex, rng, groundTex, paveTex, wallTex, roofTex, thatchTex, signTex, cutout, cutoutMesh } from './render.js?v=2';
+import { THREE, PX, pxTex, rng, groundTex, paveTex, wallTex, roofTex, thatchTex, signTex, cutout, cutoutMesh } from './render.js?v=3';
 export { THREE, PX, rng, cutout, cutoutMesh, signTex };
 
 export const sh = (c, f) => { const n = parseInt(c.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255; const m = (v) => Math.max(0, Math.min(255, Math.round(f >= 1 ? v + (255 - v) * (f - 1) : v * f))); return `rgb(${m(r)},${m(g)},${m(b)})`; };

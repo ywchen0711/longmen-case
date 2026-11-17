@@ -1,7 +1,7 @@
 // The sets of the story. Each builder fills a Diorama (scene.js): geometry, lights, marks, floor, triggers.
 // Coordinates: x across the screen, z toward the camera, y up; a person is about three units tall.
-import { THREE, PX, rng, cutout, cutoutMesh, T, sh, at, box, lam, std, texMat, floor, wall, roof, lattice, table, bench, stool, pillar, railing, stairs, screen, bed, door, sign, jar, barrel, tree, ninja } from './kit.js?v=2';
-import { waterMaterial, mist, shaft, lantern, candle, glow } from './fx.js?v=2';
+import { THREE, PX, rng, cutout, cutoutMesh, T, sh, at, box, lam, std, texMat, floor, wall, roof, lattice, table, bench, stool, pillar, railing, stairs, screen, bed, door, sign, jar, barrel, tree, ninja } from './kit.js?v=3';
+import { waterMaterial, mist, shaft, lantern, candle, glow } from './fx.js?v=3';
 
 const V3 = THREE.Vector3;
 // the river: a flowing plane, with the lights that shine on it reflected

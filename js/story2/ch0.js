@@ -1,6 +1,6 @@
 // 序幕: the storyteller's voice over 斷魂崖 at sunset.
-import { S, C, N, TITLE, W, MUS, SND, FADE, FIGHT } from '../dsl.js?v=2';
-import { f } from '../fight.js?v=2';
+import { S, C, N, TITLE, W, MUS, SND, FADE, FIGHT } from '../dsl.js?v=3';
+import { f } from '../fight.js?v=3';
 export default {
   id: 'b2c0', zh: '序幕', en: 'Prologue',
   beats: [

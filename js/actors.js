@@ -1,11 +1,11 @@
 // The people (and the myna bird) on a set: each stands on the set's floor as an upright pixel sprite that leans
 // back toward the camera and turns with it, walks or runs to a spot, faces left or right, holds a pose, moves its
 // mouth while it speaks, shows an emote over its head, and (奕碩) keeps a ball in the air.
-import { THREE, Body, animLen, animDur, PX } from './render.js?v=2';
-import { drawFrame, ANIMS } from './art.js?v=2';
-import * as ART from './art.js?v=2';
-import { LOOKS, lookOf } from './looks.js?v=2';
-import { emote, ballTex } from './fx.js?v=2';
+import { THREE, Body, animLen, animDur, PX } from './render.js?v=3';
+import { drawFrame, ANIMS } from './art.js?v=3';
+import * as ART from './art.js?v=3';
+import { LOOKS, lookOf } from './looks.js?v=3';
+import { emote, ballTex } from './fx.js?v=3';
 
 const headCache = new Map();
 function headHeight(L) { if (headCache.has(L.key)) return headCache.get(L.key); drawFrame(L, ANIMS.stand[0].o); const h = (152 - ART.lastHead[1]) / 32; headCache.set(L.key, h); return h; }

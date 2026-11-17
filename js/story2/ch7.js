@@ -1,7 +1,7 @@
 // 終回 歸: the road home at sunset; the old man far away on a lake, then gone; the dojo at dusk, a lesson in
 // listening, and a ball through a lantern.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, W, MUS, SND, FADE, FIGHT, TRIG, JUGGLE, END } from '../dsl.js?v=2';
-import { f } from '../fight.js?v=2';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, W, MUS, SND, FADE, FIGHT, TRIG, JUGGLE, END } from '../dsl.js?v=3';
+import { f } from '../fight.js?v=3';
 
 export default {
   id: 'b2c7', zh: '終回　歸', en: 'Last Chapter: Homeward',

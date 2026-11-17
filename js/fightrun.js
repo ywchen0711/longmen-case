@@ -1,9 +1,9 @@
 // Runs one action of a fight timeline (fight.js) on the player. fast = we are jumping past it: only where people
 // end up, how they stand, the camera and the set's state are applied; nothing is seen or heard.
-import { THREE } from './render.js?v=2';
-import * as AU from './audio.js?v=2';
-import { UI } from './ui.js?v=2';
-import { callId } from './data.js?v=2';
+import { THREE } from './render.js?v=3';
+import * as AU from './audio.js?v=3';
+import { UI } from './ui.js?v=3';
+import { callId } from './data.js?v=3';
 
 const V3 = THREE.Vector3;
 export function point(P, at, up = 0.62) {

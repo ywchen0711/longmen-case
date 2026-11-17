@@ -2,7 +2,7 @@
 // bloom and rain). Each set (sets.js) fills the group, names its marks (spots the script can stand people on), says
 // where the floor is (so people on a rocking boat or a sloping roof stand on it), and answers triggers (a bridge
 // falls, a candle goes out, a door is broken in).
-import { THREE } from './render.js?v=2';
+import { THREE } from './render.js?v=3';
 
 export const MOODS = {
   rain:  { sky: ['#0a1222', '#2a3a58'], fog: ['#121a28', 16, 70], hemi: ['#4a5e8a', '#0c0c14', 0.75], key: ['#9ab4f0', 0.8, [-10, 22, 12]], exposure: 1.18, tint: [0.88, 0.97, 1.16], sat: 0.92, contrast: 1.08, bloom: [0.62, 0.5, 0.78], lift: [0.0, 0.01, 0.03] },
@@ -30,7 +30,9 @@ export class Diorama {
   constructor(V) { this.V = V; this.group = null; this.ticks = []; this.marks = {}; this.name = ''; }
   clear() {
     const sc = this.V.scene;
-    if (this.group) { sc.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.dispose()); }); }
+    if (this.group) { sc.remove(this.group); const texs = new Set(); this.group.traverse((o) => { o.geometry?.dispose?.(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { for (const k of ['map', 'alphaMap', 'emissiveMap', 'normalMap', 'bumpMap', 'roughnessMap', 'lightMap', 'aoMap']) if (m[k] && m[k].isTexture) texs.add(m[k]); m.dispose(); }); });
+      // the old set's textures leave the GPU too (iPhone and iPad have little memory to spare); a texture used again is simply uploaded again
+      for (const t of texs) t.dispose(); }
     this.group = new THREE.Group(); sc.add(this.group); this.ticks = []; this.marks = {}; this.triggers = {}; this.state = {}; this.water = null; this.flakes = null; this.birds = null; this.river = null; this.reflect = []; this.floorAt = () => 0; this.rain = 0; this.wind = 1; this.lightning = 0; this.cam0 = { x: 0, y: 1.5, z: 0, d: 18, yaw: 0, pitch: 20, fov: 30 };
   }
   add(o, at) { if (at) o.position.set(...at); this.group.add(o); if (o.userData.tick) this.ticks.push(o.userData.tick); return o; }
