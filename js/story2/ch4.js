@@ -1,8 +1,8 @@
 // 第四回 刀心: the nine marks are one stroke; the black blade from the lake bed, 沉江; the first snow and a sparring
 // match with the old man's rod (he wins, then for one exchange he does not); who the old man is.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT, TRIG } from '../dsl.js?v=3';
-import { f } from '../fight.js?v=3';
-import { COL, strikeParry } from './moves.js?v=3';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, FIGHT, TRIG } from '../dsl.js?v=4';
+import { f } from '../fight.js?v=4';
+import { COL, strikeParry } from './moves.js?v=4';
 
 const V3 = (P, x, y, z) => new P.tmp.constructor(x, y, z);
 const rodHit = (a, b, kind, o = {}) => [f.hit1(a, kind === 'thrust' ? 'rodcast' : 'rodflick', 'rodguard', 0.3), 0.05, f.arc(a, kind, { color: COL.weng, s: 0.85 }), 0.04];

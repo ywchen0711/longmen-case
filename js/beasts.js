@@ -2,7 +2,7 @@
 // outline), but from their own skeleton. The white ape that guards the red fruit: a hunched, long-armed body of
 // white fur, a dark leathery face with a heavy brow and tiny dark eyes, big grey hands. Its poses (stand, roar,
 // swipe, leap, slam, yield, offer) are named ape* in ANIMS.
-import { Buf, flat, BEAST, ANIMS, OX, OY, shade, mix } from './art.js?v=3';
+import { Buf, flat, BEAST, ANIMS, OX, OY, shade, mix } from './art.js?v=4';
 const R = Math.PI / 180;
 const dirOf = (a) => [Math.sin(a * R), Math.cos(a * R)];
 const add = (p, d, l) => [p[0] + d[0] * l, p[1] + d[1] * l];

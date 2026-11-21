@@ -1,7 +1,7 @@
 // The sets of the story. Each builder fills a Diorama (scene.js): geometry, lights, marks, floor, triggers.
 // Coordinates: x across the screen, z toward the camera, y up; a person is about three units tall.
-import { THREE, PX, rng, cutout, cutoutMesh, T, sh, at, box, lam, std, texMat, floor, wall, roof, lattice, table, bench, stool, pillar, railing, stairs, screen, bed, door, sign, jar, barrel, tree, ninja } from './kit.js?v=3';
-import { waterMaterial, mist, shaft, lantern, candle, glow } from './fx.js?v=3';
+import { THREE, PX, rng, cutout, cutoutMesh, T, sh, at, box, lam, std, texMat, floor, wall, roof, lattice, table, bench, stool, pillar, railing, stairs, screen, bed, door, sign, jar, barrel, tree, ninja } from './kit.js?v=4';
+import { waterMaterial, mist, shaft, lantern, candle, glow } from './fx.js?v=4';
 
 const V3 = THREE.Vector3;
 // the river: a flowing plane, with the lights that shine on it reflected
@@ -34,12 +34,15 @@ function map(D) {
   // the river: a ribbon along a curve
   const pts = [[30, -21], [22, -17], [14, -10], [6, -3], [1, 1], [-4, 6], [-10, 11], [-20, 15], [-31, 20]].map(([x, z]) => new V3(x, 0.05, z));
   const curve = new THREE.CatmullRomCurve3(pts), N = 120, pos = [], idx = [];
-  for (let i = 0; i <= N; i++) { const p = curve.getPoint(i / N), t = curve.getTangent(i / N), nx = -t.z, nz = t.x, w = 1.3 + Math.sin(i * 0.3) * 0.2; pos.push(p.x + nx * w, 0.06, p.z + nz * w, p.x - nx * w, 0.06, p.z - nz * w); if (i < N) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+  for (let i = 0; i <= N; i++) { const p = curve.getPoint(i / N), t = curve.getTangent(i / N), nx = -t.z, nz = t.x, w = 1.3; pos.push(p.x + nx * w, 0.06, p.z + nz * w, p.x - nx * w, 0.06, p.z - nz * w); if (i < N) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
   const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); rg.setIndex(idx);
   const wm = waterMaterial({ deep: '#1a4a6a', shallow: '#3a7a9a', hi: '#bfe0f0', flow: [-0.5, 0.4] }); D.water = wm; wm.side = THREE.DoubleSide; const rv = new THREE.Mesh(rg, wm); D.add(rv);
   // banks: sandy strips along the river
   const bank = []; for (let i = 0; i <= N; i += 2) { const p = curve.getPoint(i / N); bank.push(p); }
-  for (const p of bank) { const s = box(1.0, 0.04, 1.0, lam({ color: '#b8a878' }), { cast: false }); s.position.set(p.x + (R() - 0.5) * 2.6, 0.02, p.z + (R() - 0.5) * 2.6); D.add(s); }
+  // one even sandy strip on each side of the water (the same width all the way), not scattered patches
+  { const bp = [], bi = []; for (let i = 0; i <= N; i++) { const q = curve.getPoint(i / N), t = curve.getTangent(i / N), nx = -t.z, nz = t.x, w = 2.0; bp.push(q.x + nx * w, 0.035, q.z + nz * w, q.x - nx * w, 0.035, q.z - nz * w); if (i < N) { const a = i * 2; bi.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+    const bg = new THREE.BufferGeometry(); bg.setAttribute('position', new THREE.Float32BufferAttribute(bp, 3)); bg.setIndex(bi); bg.computeVertexNormals();
+    const bm = new THREE.Mesh(bg, lam({ color: '#b8a878', side: THREE.DoubleSide })); bm.receiveShadow = true; D.add(bm); }
   // roads to the crossroads at 聽雨樓
   const road = (a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); const m = new THREE.Mesh(new THREE.PlaneGeometry(0.7, L), lam({ map: T.mud('#a88a5a') })); m.rotation.x = -Math.PI / 2; m.rotation.z = Math.atan2(dx, dz); m.position.set((a[0] + b[0]) / 2, 0.03, (a[1] + b[1]) / 2); m.receiveShadow = true; D.add(m); };
   const C0 = [2.6, 3.2];
@@ -47,8 +50,20 @@ function map(D) {
   // mountains: faceted cones, snow on the tallest
   const mount = (x, z, r, h, col = '#6a7a5a', snow) => { const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 7), lam({ map: T.rock(col), flatShading: true })); m.position.set(x, h / 2, z); m.rotation.y = R() * 3; m.castShadow = m.receiveShadow = true; D.add(m); if (snow) { const c = new THREE.Mesh(new THREE.ConeGeometry(r * 0.32, h * 0.32, 7), lam({ color: '#eef2f6', flatShading: true })); c.position.set(x, h * 0.84, z); c.rotation.y = m.rotation.y; D.add(c); } };
   for (const [x, z, r, h, c, s] of [[-16, -13, 5, 7, '#6a7a5a', 1], [-22, -16, 6, 9, '#5a6a5a', 1], [-9, -17, 4, 5, '#6a7a52'], [-27, -6, 4, 5], [17, -15, 4.2, 8, '#6a5a50', 1], [24, -12, 5, 6, '#5a5a50'], [9, -18, 3.5, 4.5], [27, -2, 3.5, 4], [16, 10, 4, 4.5, '#5a6a42'], [22, 7, 3.6, 3.8, '#5a6a42'], [12, 13, 3, 3, '#5a6a42'], [-26, 10, 3, 3.5], [27, 17, 4, 4]]) mount(x, z, r, h, c, s);
-  // forests
-  for (let i = 0; i < 120; i++) { const x = (R() - 0.5) * 60, z = (R() - 0.5) * 40; if (Math.hypot(x - 2.6, z - 3) < 4 || Math.abs(x) < 3 && Math.abs(z) < 3) continue; const p = curve.getPoint(0); let near = false; for (const b of bank) if (Math.hypot(b.x - x, b.z - z) < 2.4) { near = true; break; } if (near) continue; const t = tree(R() < 0.7 ? 'pine' : 'broad', Math.floor(R() * 999), 0.32 + R() * 0.12); t.position.set(x, 0, z); t.rotation.x = -0.25; D.add(t); }
+  // forests: trees on a staggered lattice (rows 2.9 apart, trees 3.4 apart), one size per kind, kept clear of the
+  // places, the roads, the river and the mountains; pines and broadleaves alternate in a fixed pattern
+  { const places = [[2.6, 2.4, 4], [-10, -4.5, 5], [10, -2.4, 3.8], [-14.2, -9.6, 3], [12.5, 7.6, 3.2], [-6.6, 9.6, 2.8], [17.4, -10.8, 3.4]];
+    const mts = [[-16, -13, 5], [-22, -16, 6], [-9, -17, 4], [-27, -6, 4], [17, -15, 4.2], [24, -12, 5], [9, -18, 3.5], [27, -2, 3.5], [16, 10, 4], [22, 7, 3.6], [12, 13, 3], [-26, 10, 3], [27, 17, 4]];
+    const ends = [[-10, -4], [10, -2.4], [-14, -9], [12.5, 7.5], [-6.5, 9.5], [16, -11], [24, 12], [-26, -6]];
+    const segD = (x, z, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], L = dx * dx + dz * dz, k = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / L)); return Math.hypot(x - a[0] - dx * k, z - a[1] - dz * k); };
+    for (let row = 0, z = -19.2; z < 20; z += 2.9, row++) for (let x = -29.4 + (row % 2) * 1.7; x < 30; x += 3.4) {
+      if (places.some(([px, pz, r]) => Math.hypot(x - px, z - pz) < r)) continue;
+      if (mts.some(([mx, mz, r]) => Math.hypot(x - mx, z - mz) < r + 0.6)) continue;
+      if (ends.some((e) => segD(x, z, C0, e) < 1.1)) continue;
+      if (bank.some((q) => Math.hypot(q.x - x, q.z - z) < 2.8)) continue;
+      const pine = (row + Math.round(x / 3.4)) % 3 !== 0, t = tree(pine ? 'pine' : 'broad', 1 + (row + Math.round(x / 3.4)) % 3, pine ? 0.4 : 0.36);
+      t.position.set(x, 0, z); t.rotation.x = -0.25; D.add(t);
+    } }
   // the seven places, each a little diorama with a signboard
   const label = (text, x, z, y) => { const s = sign(text, text.length * 1.1 + 0.6, 1.1, { emit: '#5a4a2a' }); s.position.set(x, y, z); s.rotation.x = -0.5; D.add(s); return s; };
   const P = {};

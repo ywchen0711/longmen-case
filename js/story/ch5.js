@@ -1,6 +1,6 @@
 // 第五回 八哥開口: the myna speaks twice; the third deduction; the reveal, told over the sepia of memory; the clerk drops
 // his mask; the fight; a dart out of the dark.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, CLUE, ASK, MOVE, FX, TRIG, W, MUS, SND, SLOW, BACK, FADE, JUGGLE } from '../dsl.js?v=3';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, CLUE, ASK, MOVE, FX, TRIG, W, MUS, SND, SLOW, BACK, FADE, JUGGLE } from '../dsl.js?v=4';
 const ROOM = [TRIG('broken'), TRIG('blood', 1), TRIG('murder'), TRIG('snuff'), TRIG('palm'), TRIG('spill'), TRIG('empty')];
 export default {
   id: 'ch5', zh: '第五回　八哥開口', en: 'Chapter Five: The Myna Speaks',

@@ -3,7 +3,7 @@
 // the ground, cracks and furrows left in it, the vertical river of light of 一刀・天河, glowing meridians and an aura,
 // and the weather of a living set: falling leaves, petals, snow and fireflies that blade wind can blow away, and birds
 // crossing the sky. Everything runs on game time (slow motion and hit-stop slow or freeze it).
-import { THREE, PX, cutout, rng } from './render.js?v=3';
+import { THREE, PX, cutout, rng } from './render.js?v=4';
 
 const V3 = THREE.Vector3;
 const nearest = (c) => { const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace; return t; };

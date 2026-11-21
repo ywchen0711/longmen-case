@@ -1,7 +1,7 @@
 // The two books of the novel. Each has its chapters, its own saved progress and its own title picture. Book one is
 // read (lines wait for the reader, casebook, deductions); book two is watched (it plays itself like a film).
-import { CHAPTERS as C1 } from './story/index.js?v=3';
-import { CHAPTERS as C2 } from './story2/index.js?v=3';
+import { CHAPTERS as C1 } from './story/index.js?v=4';
+import { CHAPTERS as C2 } from './story2/index.js?v=4';
 
 export const BOOKS = [
   { id: 1, chapters: C1, save: 'longmenCase.v1', sub: ['聽雨樓密室', 'The Locked Room at Tingyu House'], tag: 'The Longmen Casebook · Book One',

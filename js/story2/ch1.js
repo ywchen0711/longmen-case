@@ -1,8 +1,8 @@
 // 第一回 斷刀: a bright morning at the saber manor; 血刀門 comes; 奕叡 beats four disciples (fast, flashy, blunt);
 // 厲寒山 reads every stroke, snaps the ring saber, takes 奕碩, and knocks 奕叡 off 斷魂崖.
-import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, JUGGLE, FIGHT, FLAKES } from '../dsl.js?v=3';
-import { f } from '../fight.js?v=3';
-import { strikeParry, strikeHit, strikeMiss, COL } from './moves.js?v=3';
+import { S, A, M, P, F, E, LOOK, H, C, CU, TWO, L, N, TITLE, CARD, POEM, W, MUS, SND, FADE, JUGGLE, FIGHT, FLAKES } from '../dsl.js?v=4';
+import { f } from '../fight.js?v=4';
+import { strikeParry, strikeHit, strikeMiss, COL } from './moves.js?v=4';
 
 const XD = (id, pos, fc, seed) => A(id, 'xuedao:' + seed, pos, { f: fc });
 export default {

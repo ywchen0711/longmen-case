@@ -1,11 +1,11 @@
 // Boots the novel: the renderer, the title screen over 聽雨樓 in the rain, input (mouse, touch, keyboard, gamepad),
 // the frame loop, and window.G for tests (jump to a chapter and line, step frames, run everything quickly).
-import { createView } from './render.js?v=3';
-import { Player } from './player.js?v=3';
-import { UI } from './ui.js?v=3';
-import * as AU from './audio.js?v=3';
-import { BOOKS } from './books.js?v=3';
-import { ASKS } from './data.js?v=3';
+import { createView } from './render.js?v=4';
+import { Player } from './player.js?v=4';
+import { UI } from './ui.js?v=4';
+import * as AU from './audio.js?v=4';
+import { BOOKS } from './books.js?v=4';
+import { ASKS } from './data.js?v=4';
 
 const $ = (s) => document.querySelector(s);
 const V = createView($('#c'));

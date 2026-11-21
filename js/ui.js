@@ -2,8 +2,8 @@
 // move names), the clue pop-up and the casebook, the deduction choices, the backlog, chapter select, the menu and
 // the title screen. Every list can be worked with a mouse, a finger, the keyboard or a gamepad (sel = the
 // highlighted item).
-import { NAMES, HUE, POEMS, CLUES, CLUE_ORDER, ASKS } from './data.js?v=3';
-import { cluePic } from './clues.js?v=3';
+import { NAMES, HUE, POEMS, CLUES, CLUE_ORDER, ASKS } from './data.js?v=4';
+import { cluePic } from './clues.js?v=4';
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };

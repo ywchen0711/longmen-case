@@ -2,7 +2,7 @@
 // bloom and rain). Each set (sets.js) fills the group, names its marks (spots the script can stand people on), says
 // where the floor is (so people on a rocking boat or a sloping roof stand on it), and answers triggers (a bridge
 // falls, a candle goes out, a door is broken in).
-import { THREE } from './render.js?v=3';
+import { THREE } from './render.js?v=4';
 
 export const MOODS = {
   rain:  { sky: ['#0a1222', '#2a3a58'], fog: ['#121a28', 16, 70], hemi: ['#4a5e8a', '#0c0c14', 0.75], key: ['#9ab4f0', 0.8, [-10, 22, 12]], exposure: 1.18, tint: [0.88, 0.97, 1.16], sat: 0.92, contrast: 1.08, bloom: [0.62, 0.5, 0.78], lift: [0.0, 0.01, 0.03] },
